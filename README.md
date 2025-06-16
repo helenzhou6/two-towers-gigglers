@@ -18,3 +18,9 @@
 - Hugging face datasets: outputs validation, train and test datasets
 - Has 82326 rows - for query_id
 - Column names: 'answers', 'passages', 'query', 'query_id', 'query_type', 'wellFormedAnswers'
+
+
+## Brainstorming
+Steps/architecture decided in brainstorming session
+
+![Image of architecture](https://github.com/user-attachments/assets/9713a5dc-d4bc-445e-a6fb-79a0049e9265)
