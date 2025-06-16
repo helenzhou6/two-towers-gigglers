@@ -4,15 +4,14 @@ import pandas as pd
 from fasttext.FastText import tokenize
 
 class KeyQueryDataset(IterableDataset):
-
     def __init__(self,   word2idx =None,  query_data_file= 'data/query.parquet', 
                  docs_data_file = 'data/docs.parquet', ): #num_negative_samples = 1,
         super().__init__()
         #TODO: Allow num_negative_samples to be set bigger than one
         self.word2idx = word2idx
         #self.num_neg_samples = num_negative_samples
-        self.query_data = pd.load_parquet(query_data_file)
-        self.doc_data = pd.load_parquet(docs_data_file)
+        self.query_data = pd.read_parquet(query_data_file)
+        self.doc_data = pd.read_parquet(docs_data_file)
     
     def __iter__(self):
         #TODO: Set up with multiple workers
