@@ -1,3 +1,4 @@
+import fasttext
 import fasttext.util
 import torch
 import re
@@ -9,11 +10,14 @@ def tokenize(text):
     return re.findall(r'\b\w+\b', text.lower())
 
 def sentence_to_tensor(text, model):
-    tokens = tokenize(text)
+    tokens = fasttext.tokenize(text)
     vectors = [torch.tensor(model.get_word_vector(token)) for token in tokens]
-    return vectors  # List of torch.FloatTensors, each of shape [300] by default
+    return vectors
 
 def average_vector(vectors):
     if not vectors:
         return torch.zeros(300)
     return torch.stack(vectors).mean(dim=0)
+
+
+print(sentence_to_tensor("what is the vector space", ft))

@@ -9,5 +9,7 @@ dependencies = [
     "fasttext>=0.9.3",
     "numpy==1.23",
     "pandas>=1.5.1",
+    "redis>=6.2.0",
+    "redisearch>=2.0.0",
     "torch==2.2.0",
 ]
