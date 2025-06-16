@@ -151,6 +151,26 @@ wheels = [
 ]
 
 [[package]]
+name = "numpy"
+version = "1.23.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/03/c6/14a17e10813b8db20d1e800ff9a3a898e65d25f2b0e9d6a94616f1e3362c/numpy-1.23.0.tar.gz", hash = "sha256:bd3fa4fe2e38533d5336e1272fc4e765cabbbde144309ccee8675509d5cd7b05", size = 10714532, upload-time = "2022-06-22T22:26:20.384Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/86/65/fe6f20a40d05fc909cab9c3c17f259b03a1fbf87a6b3a7b92ca0376582e8/numpy-1.23.0-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:58bfd40eb478f54ff7a5710dd61c8097e169bc36cc68333d00a9bcd8def53b38", size = 18104449, upload-time = "2022-06-22T22:13:34.426Z" },
+    { url = "https://files.pythonhosted.org/packages/e6/aa/323e1cf4f25025c6f67dcf179db754142f92847c9d592599dc01b78de460/numpy-1.23.0-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:196cd074c3f97c4121601790955f915187736f9cf458d3ee1f1b46aff2b1ade0", size = 13338216, upload-time = "2022-06-22T22:13:55.015Z" },
+    { url = "https://files.pythonhosted.org/packages/85/f9/06e90e66b9c4148ef044329da0a1c8e4f76bbf8f618a8367470f531b6433/numpy-1.23.0-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:f1d88ef79e0a7fa631bb2c3dda1ea46b32b1fe614e10fedd611d3d5398447f2f", size = 13920917, upload-time = "2022-06-22T22:14:16.077Z" },
+    { url = "https://files.pythonhosted.org/packages/7a/88/8404fbe4f6472e4e54106a8faacae1279a244422bc88f5ee3e33ba2dd72b/numpy-1.23.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:d54b3b828d618a19779a84c3ad952e96e2c2311b16384e973e671aa5be1f6187", size = 17033638, upload-time = "2022-06-22T22:14:41.454Z" },
+    { url = "https://files.pythonhosted.org/packages/0a/fb/03f410814f9321761f25faa257554671ff77c1a746e4641002ad90972773/numpy-1.23.0-cp310-cp310-win32.whl", hash = "sha256:2b2da66582f3a69c8ce25ed7921dcd8010d05e59ac8d89d126a299be60421171", size = 12187497, upload-time = "2022-06-22T22:15:01.164Z" },
+    { url = "https://files.pythonhosted.org/packages/34/1c/1c9ec57f522822e7507fb5cf69b153f857405518d8f50fa4ff94f43385be/numpy-1.23.0-cp310-cp310-win_amd64.whl", hash = "sha256:97a76604d9b0e79f59baeca16593c711fddb44936e40310f78bfef79ee9a835f", size = 14636971, upload-time = "2022-06-22T22:15:23.758Z" },
+    { url = "https://files.pythonhosted.org/packages/af/e3/e2cbfbf5b36706416aea1f17ec4ef454360e8e0177782dda43befcb43177/numpy-1.23.0-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:1c29b44905af288b3919803aceb6ec7fec77406d8b08aaa2e8b9e63d0fe2f160", size = 18116972, upload-time = "2022-06-22T22:18:03.697Z" },
+    { url = "https://files.pythonhosted.org/packages/8b/a5/6b5a75f87cb330460398e8c7be7399d9f1c75c9b1a73888d4952a50184b0/numpy-1.23.0-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:98e8e0d8d69ff4d3fa63e6c61e8cfe2d03c29b16b58dbef1f9baa175bbed7860", size = 13347635, upload-time = "2022-06-22T22:18:23.69Z" },
+    { url = "https://files.pythonhosted.org/packages/53/2e/acd76ea66fd4b5e02dd572101c2628a134f3fdedcaef10175dab2d5398aa/numpy-1.23.0-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:79a506cacf2be3a74ead5467aee97b81fca00c9c4c8b3ba16dbab488cd99ba10", size = 13948410, upload-time = "2022-06-22T22:18:44.993Z" },
+    { url = "https://files.pythonhosted.org/packages/da/0e/496e529f440f528273f6847e14d7b132b0556a824fc2af36e8afd8e6a020/numpy-1.23.0-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:092f5e6025813e64ad6d1b52b519165d08c730d099c114a9247c9bb635a2a450", size = 17054599, upload-time = "2022-06-22T22:19:10.51Z" },
+    { url = "https://files.pythonhosted.org/packages/b1/db/9125172436997928dd9987c1bf552513dc055bf4e302c747d9ae5ad473be/numpy-1.23.0-cp39-cp39-win32.whl", hash = "sha256:d6ca8dabe696c2785d0c8c9b0d8a9b6e5fdbe4f922bde70d57fa1a2848134f95", size = 12210982, upload-time = "2022-06-22T22:19:29.158Z" },
+    { url = "https://files.pythonhosted.org/packages/aa/b2/a122ec818608b6020a8cdd7a9cc40896c5747aba8a6b4d36625e7927a540/numpy-1.23.0-cp39-cp39-win_amd64.whl", hash = "sha256:fc431493df245f3c627c0c05c2bd134535e7929dbe2e602b80e42bf52ff760bc", size = 14661922, upload-time = "2022-06-22T22:19:51.311Z" },
+]
+
+[[package]]
 name = "nvidia-cublas-cu12"
 version = "12.1.3.1"
 source = { registry = "https://pypi.org/simple" }
@@ -337,11 +357,15 @@ name = "two-towers-gigglers"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
+    { name = "numpy" },
     { name = "torch" },
 ]
 
 [package.metadata]
-requires-dist = [{ name = "torch", specifier = "==2.2.0" }]
+requires-dist = [
+    { name = "numpy", specifier = "==1.23" },
+    { name = "torch", specifier = "==2.2.0" },
+]
 
 [[package]]
 name = "typing-extensions"
