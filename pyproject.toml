@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.10.13"
 dependencies = [
     "datasets>=2.14.4",
+    "fasttext>=0.9.3",
     "numpy==1.23",
     "pandas>=1.5.1",
     "torch==2.2.0",
