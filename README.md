@@ -6,3 +6,5 @@
 
 ### To run files
 1. Run `uv sync` to install all dependencies
+2. To run a file: `uv run main.py`  - this should print a statement
+- To set the venv in VSCode (on Mac, you can do Shift Command P - you can select the interpreter to be virtual env uv has set up, in .venv) 
