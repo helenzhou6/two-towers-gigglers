@@ -9,24 +9,30 @@ class KeyQueryDataset(IterableDataset):
         super().__init__()
         #TODO: Allow num_negative_samples to be set bigger than one
         self.word2idx = word2idx
+        self.UNK_val = self.word2idx.get("<UNK>")
         #self.num_neg_samples = num_negative_samples
         self.query_data = pd.read_parquet(query_data_file)
         self.doc_data = pd.read_parquet(docs_data_file)
     
     def __iter__(self):
         #TODO: Set up with multiple workers
-        #get positive sample
-        query, pos_sample = tuple(self.query_data.sample(1).loc[:,["query", "doc"]])
-        #get negative samples
-        neg_sample = self.doc_data.sample(1)["doc"][0]
-        query_indices = torch.tensor([self.word2idx.get(token, '<UNK>') for token in tokenize(query)])
-        pos_sample_indices = torch.tensor([self.word2idx.get(token, '<UNK>') for token in tokenize(pos_sample)])
-        neg_sample_indices = torch.tensor([self.word2idx.get(token, '<UNK>') for token in tokenize(neg_sample)])
+        while(True):
+            #get positive sample
+            query, pos_sample = tuple(self.query_data.sample(1).iloc[0][["query", "doc"]])
+            #get negative samples
+            neg_sample = self.doc_data.sample(1)["doc"].iloc[0]
+            query_indices = torch.tensor([self.word2idx.get(token, self.UNK_val) for token in tokenize(query)])
+            pos_sample_indices = torch.tensor([self.word2idx.get(token, self.UNK_val) for token in tokenize(pos_sample)])
+            neg_sample_indices = torch.tensor([self.word2idx.get(token, self.UNK_val) for token in tokenize(neg_sample)])
 
-        yield (query_indices, pos_sample_indices, neg_sample_indices)
+            yield (query_indices, pos_sample_indices, neg_sample_indices)
 
 def collate_fn_emb_bag(data_items):
-    queries, pos_samples, neg_samples = zip(data_items)
+    if not data_items:
+        return None
+    
+    queries, pos_samples, neg_samples = zip(*data_items)
+    
     cat_queries = torch.cat(queries)
     cat_pos_samples = torch.cat(pos_samples)
     cat_neg_samples = torch.cat(neg_samples)

@@ -27,10 +27,11 @@ counter = Counter(corpus_tokenized)
 most_common = counter.most_common(MAX_VOCAB_SIZE)
 word2idx = {word: idx for idx, (word, _) in enumerate(most_common)}
 
+word2idx['<UNK>'] = len(word2idx)  # Add unknown token
+
 with open("data/vocab.json", "w") as file:
     json.dump(word2idx, file)
 
-word2idx['<UNK>'] = len(word2idx)  # Add unknown token
 
 vocab_size = len(word2idx)
 print("Vocab size:", vocab_size)
