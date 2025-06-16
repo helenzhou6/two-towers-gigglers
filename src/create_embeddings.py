@@ -6,18 +6,22 @@ from fasttext.FastText import tokenize
 from fasttext import util
 import json
 
+from wandb_utils import init_wandb, save_model
+
 # === 0. Params ===
 MAX_VOCAB_SIZE = 10000
 EMBEDDING_DIM =  300
 QUERY_DATA_FILE_PATH = 'data/query.parquet'
 DOCS_DATA_FILE_PATH = 'data/docs.parquet'
 
+init_wandb(None, None)
+
 util.download_model('en', if_exists='ignore')  # English
 ft = fasttext.load_model('cc.en.300.bin')
 
 # === 1. Sample corpus ===
 # TODO: SWAP OUT THE BELOW!
-corpus = pd.concat([pd.read_parquet(QUERY_DATA_FILE_PATH)["query"].drop_duplicates(), pd.read_parquet(DOCS_DATA_FILE_PATH)["doc"]])
+corpus = pd.concat([pd.read_parquet(QUERY_DATA_FILE_PATH)["query"].drop_duplicates()[:20], pd.read_parquet(DOCS_DATA_FILE_PATH)["doc"][:20]])
 
 # # === 2. Tokenize ===
 corpus_tokenized = corpus.apply(lambda row: tokenize(row)).sum()
@@ -46,6 +50,8 @@ for word in word2idx:
     vectors.append(torch.tensor(vec))
 fasttext_tensor = torch.stack(vectors)  # shape: [vocab_size, EMBEDDING_DIM]
 torch.save(fasttext_tensor, "data/fasttext_tensor.pt")
+
+save_model('fasttext_tensor', 'FastText embedding from data set')
 
 # # === 6. Create Embedding layer ===
 # embedding_layer = torch.nn.Embedding.from_pretrained(fasttext_tensor, freeze=False)
