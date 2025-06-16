@@ -1296,6 +1296,7 @@ dependencies = [
     { name = "datasets", version = "2.14.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
     { name = "datasets", version = "3.6.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
     { name = "numpy" },
+    { name = "pandas" },
     { name = "torch" },
 ]
 
@@ -1303,6 +1304,7 @@ dependencies = [
 requires-dist = [
     { name = "datasets", specifier = ">=2.14.4" },
     { name = "numpy", specifier = "==1.23" },
+    { name = "pandas", specifier = ">=1.5.1" },
     { name = "torch", specifier = "==2.2.0" },
 ]
 

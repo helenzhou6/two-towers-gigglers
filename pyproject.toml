@@ -7,5 +7,6 @@ requires-python = ">=3.9.3"
 dependencies = [
     "datasets>=2.14.4",
     "numpy==1.23",
+    "pandas>=1.5.1",
     "torch==2.2.0",
 ]

@@ -9,3 +9,8 @@
 2. To run a file: `uv run main.py`  - this should print a statement
 - To set the venv in VSCode (on Mac, you can do Shift Command P - you can select the interpreter to be virtual env uv has set up, in .venv) 
 3. If `export PYTHONPATH=./src` (bash) and create `__init__.py` files for each folder (should already be there).
+
+## Input dataset
+- Hugging face datasets: outputs validation, train and test datasets
+- Has 82326 rows - for query_id
+- Column names: 'answers', 'passages', 'query', 'query_id', 'query_type', 'wellFormedAnswers'
