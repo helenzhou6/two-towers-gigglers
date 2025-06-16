@@ -12,4 +12,5 @@ dependencies = [
     "redis>=6.2.0",
     "redisearch>=2.0.0",
     "torch==2.2.0",
+    "wandb>=0.20.1",
 ]
