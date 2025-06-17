@@ -16,8 +16,8 @@ class QryTower(torch.nn.Module):
 class DocTower(torch.nn.Module):
     def __init__(self, embedding, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fc = torch.nn.Linear(self.embedding.embedding_dim, 1)
         self.embedding = embedding
+        self.fc = torch.nn.Linear(self.embedding.embedding_dim, 1)
 
     def forward(self, x_indices, x_offsets):
         # x_indices: concatenated token indices
