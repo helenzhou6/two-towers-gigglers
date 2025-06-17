@@ -9,13 +9,15 @@
 
 ### To run files
 1. Run `uv sync` to install all dependencies
-2. To run a file: `uv run main.py`  - this should print a statement
 - To set the venv in VSCode (on Mac, you can do Shift Command P - you can select the interpreter to be virtual env uv has set up, in .venv) 
-3. If `export PYTHONPATH=./src` (bash) and create `__init__.py` files for each folder (should already be there)
+2. If `export PYTHONPATH=./src` (bash) and create `__init__.py` files for each folder (should already be there)
 
 ### Scripts to run
-1. `process_bing_dataset.py` will create data/docs.parquet and data/query.parquet 
+1. `process_bing_dataset.py` will process the MS/Marcho dataset to create two datasets: 
+- docs dataset that has all the unique docs per pandas row saved to data/docs.parquet 
+- data dataset that includes query (string), doc (string), and whether it was clicked (0/1), for all queries (we are going to assume these are all positive docs). Saved data/query.parquet
 2. `create_embeddings.py` that will download the fasttext model and create vocab embeddings. This uploads the output (embeddings) to wandb, which can be accessed instead of running this file. Also uploads the vocab.json to wandb
+3. `run_two_towers.py` - this initialises two models (the query model and the doc model). These then get trained jointly - query model gets trained on queries, and doc model gets trained on the positive sample (an entry from query dataset), and a negative sample (what we deem to be a random document)
 
 ## Input dataset
 - Hugging face datasets: outputs validation, train and test datasets
