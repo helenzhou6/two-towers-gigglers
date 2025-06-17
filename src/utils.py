@@ -30,10 +30,13 @@ def load_model_path(model_name):
     downloaded_model_path = wandb.use_model(model_name)
     return downloaded_model_path
 
-def get_device():
+def get_device_string():
     if (torch.cuda.is_available()):
         return "cuda"
     # elif (torch.backends.mps.is_available()):
     #     return "mps"
     else:
         return "cpu"
+
+def get_device():
+    return torch.device(get_device_string())
