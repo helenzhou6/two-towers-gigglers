@@ -5,34 +5,6 @@ import pandas as pd
 from fasttext.FastText import tokenize
 
 class KeyQueryDataset(IterableDataset):
-    # def __init__(self, start, end, word2idx=None, query_data_file='data/query.parquet', 
-    #              docs_data_file='data/docs.parquet'): #num_negative_samples = 1,
-    #     super().__init__()
-    #     #TODO: Allow num_negative_samples to be set bigger than one
-    #     self.word2idx = word2idx
-    #     self.UNK_val = self.word2idx.get("<UNK>")
-    #     self.start = start
-    #     self.end = end
-    #     #self.num_neg_samples = num_negative_samples
-    #     self.query_data = pd.read_parquet(query_data_file)
-    #     self.doc_data = pd.read_parquet(docs_data_file)
-    
-    # def __iter__(self):
-    #     #TODO: Set up with multiple workers
-    #     for _ in range(self.start, self.end):
-            
-    #         # get positive sample
-    #         query, pos_sample = tuple(self.query_data.sample(1).iloc[0][["query", "doc"]])
-
-    #         # get negative samples
-    #         neg_sample = self.doc_data.sample(1)["doc"].iloc[0]
-
-    #         query_indices = torch.tensor([self.word2idx.get(token, self.UNK_val) for token in tokenize(query)])
-    #         pos_sample_indices = torch.tensor([self.word2idx.get(token, self.UNK_val) for token in tokenize(pos_sample)])
-    #         neg_sample_indices = torch.tensor([self.word2idx.get(token, self.UNK_val) for token in tokenize(neg_sample)])
-
-    #         yield (query_indices, pos_sample_indices, neg_sample_indices)
-
     def __init__(self, start, end, word2idx, query_data_file, docs_data_file):
         super().__init__()
         self.UNK = word2idx["<UNK>"]
@@ -43,6 +15,10 @@ class KeyQueryDataset(IterableDataset):
         self.queries = [
             torch.tensor([word2idx.get(tok, self.UNK) for tok in tokenize(q)])
             for q in df_q["query"]
+        ]
+        self.positives = [
+            torch.tensor([word2idx.get(tok, self.UNK) for tok in d])
+            for d in df_q["doc"]
         ]
         self.documents = [
             torch.tensor([word2idx.get(tok, self.UNK) for tok in d])
@@ -59,7 +35,7 @@ class KeyQueryDataset(IterableDataset):
             j = random.randrange(self.nd)
             yield (
                 self.queries[i],
-                self.documents[i],
+                self.positives[i],
                 self.documents[j],
             )
 
