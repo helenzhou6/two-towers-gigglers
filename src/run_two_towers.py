@@ -57,3 +57,7 @@ loss = torch.max(torch.tensor(0.0), dst_mrg - dst_dif)
 # To create the gradients for training
 loss.backward()
 
+# TODOs:
+# -- Need the dataloader to function, to be able input the raw data into both models
+# -- Link the two towers to output a similarity score
+# -- Train it
