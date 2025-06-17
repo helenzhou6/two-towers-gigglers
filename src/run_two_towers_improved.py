@@ -70,14 +70,6 @@ dataset = KeyQueryDataset(start=0, end=QUERY_END, word2idx=w2ix, query_data_file
                   docs_data_file='data/docs.parquet')
 dataloader = DataLoader(dataset, batch_size=BATCH_SIZE, collate_fn=collate_fn_emb_bag)
 
-import time
-it = iter(dataloader)
-t0 = time.time()
-batch = next(it)
-print(f"Load+collate for 1 batch: {time.time()-t0:.3f}s")
-
-
-
 for epoch in range(0, EPOCHS):
     query_model.train()
     doc_model.train()
