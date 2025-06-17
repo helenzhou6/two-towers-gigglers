@@ -54,7 +54,6 @@ vocab_size = len(word2idx)
 print("Vocab size:", vocab_size)
 print(f"END: writing vocab.json for {MAX_VOCAB_SIZE} words")
 
-
 # # === 5. Create fasttext_tensor ===
 print(f"START: create vectors for tokenized words")
 vectors = []
@@ -68,3 +67,4 @@ print(f"DONE: create vectors for tokenized words")
 embedding_layer = torch.nn.Embedding.from_pretrained(fasttext_tensor, freeze=False)
 torch.save(embedding_layer.state_dict(), 'data/fasttext_tensor.pt')
 save_model('fasttext_tensor', 'FastText embedding from data set')
+save_model('vocab', 'The indicies of our words in the vocabulary', file_extension='json')

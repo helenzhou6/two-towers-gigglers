@@ -17,13 +17,13 @@ def init_wandb(lr = None, epochs = None):
         },
     )
 
-def save_model(model_name, model_description):
+def save_model(model_name, model_description, file_extension = 'pt'):
     artifact = wandb.Artifact(
         name=model_name,
         type="model",
         description=model_description
     )
-    artifact.add_file(f"./data/{model_name}.pt")
+    artifact.add_file(f"./data/{model_name}.{file_extension}")
     wandb.log_artifact(artifact)
 
 def load_model(model_name):
