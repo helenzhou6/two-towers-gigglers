@@ -1,14 +1,17 @@
 import torch
+import wandb
+import json
+import os
+
 from torch.utils.data import DataLoader
 from tqdm import tqdm
-import json
 from utils import load_model_path, init_wandb, get_device, save_model
 from two_towers import QryTower, DocTower
 from dataloader import KeyQueryDataset, collate_fn_emb_bag, getKQDataLoader
 
 LEARNING_RATE = 1e-3
 EPOCHS = 5
-BATCH_SIZE = 32
+BATCH_SIZE = 5
 QUERY_END = 10000
 MARGIN = torch.tensor(0.2)
 device = get_device()
@@ -19,34 +22,34 @@ ft_embedded_path = load_model_path('fasttext_tensor:latest')
 ft_state_dict = torch.load(ft_embedded_path, map_location=device)
 num_embeddings, embedding_dim = ft_state_dict["weight"].shape
 
-embedding_bag_doc = torch.nn.EmbeddingBag(
-    num_embeddings,
-    embedding_dim,
-    mode='mean',
+embedding_bag_doc = embedding_bag_qry = torch.nn.EmbeddingBag.from_pretrained(
+    embeddings=ft_state_dict["weight"],
+    freeze=False,
     padding_idx=ft_state_dict.get('padding_idx', None),
-    sparse=ft_state_dict.get('sparse', False),
-)
-embedding_bag_doc.load_state_dict(ft_state_dict) # Returns Embedding(100001, 300)
-embedding_bag_doc.to(device)
+    mode='mean',
+    sparse=ft_state_dict.get('sparse', False)
+).to(device)
 
-embedding_bag_query = torch.nn.EmbeddingBag(
-    num_embeddings,
-    embedding_dim,
-    mode='mean',
+embedding_bag_query = torch.nn.EmbeddingBag.from_pretrained(
+    embeddings=ft_state_dict["weight"],
+    freeze=False,
     padding_idx=ft_state_dict.get('padding_idx', None),
-    sparse=ft_state_dict.get('sparse', False),
-)
-embedding_bag_query.load_state_dict(ft_state_dict) # Returns Embedding(100001, 300)
-embedding_bag_query.to(device)
+    mode='mean',
+    sparse=ft_state_dict.get('sparse', False)
+).to(device)
 
 # Init Two Towers
 query_model = QryTower(embedding_bag_query).to(device)
 doc_model = DocTower(embedding_bag_doc).to(device)
 
+wandb.watch(query_model, log="all", log_freq=100)
+wandb.watch(doc_model, log="all", log_freq=100)
+
 optimizer = torch.optim.Adam(
     list(query_model.parameters()) + list(doc_model.parameters()),
     lr=LEARNING_RATE
 )
+
 # ── 4) Use the built-in triplet loss with cosine distance ───────────────────────
 criterion = torch.nn.TripletMarginWithDistanceLoss(
     margin=MARGIN,
@@ -90,14 +93,14 @@ for epoch in range(0, EPOCHS):
         loss.backward()
         optimizer.step()
 
-        for name, param in doc_model.named_parameters():
-          if param.grad is None:
-              print(f"No grad for {name}")
-          else:
-              print(f"Grad for {name}: {param.grad.norm()}")
+        if os.getenv('DEBUG'):
+            for name, param in doc_model.named_parameters():
+                if param.grad is None:
+                    print(f"No grad for {name}")
+                else:
+                    print(f"Grad for {name}: {param.grad.norm()}")
 
         total_loss += loss.item()
-
 
     avg_loss = total_loss / len(dataloader)
     print(f">>> Epoch {epoch+1} average loss: {avg_loss:.4f}")
