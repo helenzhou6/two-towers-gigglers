@@ -28,7 +28,7 @@ num_embeddings, embedding_dim = ft_state_dict["weight"].shape
 
 embedding_bag_doc = embedding_bag_qry = torch.nn.EmbeddingBag.from_pretrained(
     embeddings=ft_state_dict["weight"],
-    freeze=False,
+    freeze=True,
     padding_idx=ft_state_dict.get('padding_idx', None),
     mode='mean',
     sparse=ft_state_dict.get('sparse', False)
@@ -36,7 +36,7 @@ embedding_bag_doc = embedding_bag_qry = torch.nn.EmbeddingBag.from_pretrained(
 
 embedding_bag_query = torch.nn.EmbeddingBag.from_pretrained(
     embeddings=ft_state_dict["weight"],
-    freeze=False,
+    freeze=True,
     padding_idx=ft_state_dict.get('padding_idx', None),
     mode='mean',
     sparse=ft_state_dict.get('sparse', False)
@@ -66,8 +66,17 @@ vocab_path = load_model_path('vocab:latest')
 with open(vocab_path) as file:
     w2ix = json.load(file)
 
-dataset = KeyQueryDataset(start=0, end=QUERY_END, word2idx=w2ix)
+dataset = KeyQueryDataset(start=0, end=QUERY_END, word2idx=w2ix, query_data_file='data/query.parquet', 
+                  docs_data_file='data/docs.parquet')
 dataloader = DataLoader(dataset, batch_size=BATCH_SIZE, collate_fn=collate_fn_emb_bag)
+
+import time
+it = iter(dataloader)
+t0 = time.time()
+batch = next(it)
+print(f"Load+collate for 1 batch: {time.time()-t0:.3f}s")
+
+
 
 for epoch in range(0, EPOCHS):
     query_model.train()
