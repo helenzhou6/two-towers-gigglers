@@ -202,3 +202,4 @@ cc.en.300.bin.gz
 redis/data/
 wandb/*
 .DS_Store
+artifacts/*

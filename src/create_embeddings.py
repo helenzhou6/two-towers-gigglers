@@ -7,7 +7,7 @@ from fasttext import util
 import json
 from tqdm import tqdm
 
-from wandb_utils import init_wandb, save_model
+from utils import init_wandb, save_model
 
 tqdm.pandas()
 

@@ -15,7 +15,7 @@
 
 ### Scripts to run
 1. `process_bing_dataset.py` will create data/docs.parquet and data/query.parquet 
-2. `create_embeddings.py` that will download the fasttext model and create vocab embeddings
+2. `create_embeddings.py` that will download the fasttext model and create vocab embeddings. This uploads the output (embeddings) to wandb, which can be accessed instead of running this file.
 
 ## Input dataset
 - Hugging face datasets: outputs validation, train and test datasets
