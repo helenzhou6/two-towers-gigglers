@@ -62,11 +62,9 @@ for word in tqdm(word2idx):
     vec = fasttext_model.get_word_vector(word)
     vectors.append(torch.tensor(vec))
 fasttext_tensor = torch.stack(vectors)  # shape: [vocab_size, EMBEDDING_DIM]
-torch.save(fasttext_tensor, "data/fasttext_tensor.pt")
 print(f"DONE: create vectors for tokenized words")
 
-save_model('fasttext_tensor', 'FastText embedding from data set')
-
 # # === 6. Create Embedding layer ===
-# embedding_layer = torch.nn.Embedding.from_pretrained(fasttext_tensor, freeze=False)
-# torch.save(embedding_layer.state_dict(), 'data/embedding_weights.pth')
+embedding_layer = torch.nn.Embedding.from_pretrained(fasttext_tensor, freeze=False)
+torch.save(embedding_layer.state_dict(), 'data/fasttext_tensor.pt')
+save_model('fasttext_tensor', 'FastText embedding from data set')
