@@ -16,6 +16,10 @@ QUERY_END = 10000
 MARGIN = torch.tensor(0.2)
 device = get_device()
 
+print('Starting... Two Towers Document Search Training\n\n')
+
+print(f'Using device {device}.')
+
 # Loads embeddings and test out works
 init_wandb(LEARNING_RATE, EPOCHS)
 ft_embedded_path = load_model_path('fasttext_tensor:latest')
@@ -63,9 +67,7 @@ with open(vocab_path) as file:
     w2ix = json.load(file)
 
 dataset = KeyQueryDataset(start=0, end=QUERY_END, word2idx=w2ix)
-dataloader = DataLoader(dataset,
-                        batch_size=BATCH_SIZE,
-                        collate_fn=collate_fn_emb_bag)
+dataloader = DataLoader(dataset, batch_size=BATCH_SIZE, collate_fn=collate_fn_emb_bag)
 
 for epoch in range(0, EPOCHS):
     query_model.train()
@@ -76,7 +78,7 @@ for epoch in range(0, EPOCHS):
         desc=f"Epoch {epoch+1}/{EPOCHS}"
     ):
         # move to device
-        q_flat, q_off   = q_flat.to(device), q_off.to(device)
+        q_flat, q_off = q_flat.to(device), q_off.to(device)
         pos_flat, pos_off = pos_flat.to(device), pos_off.to(device)
         neg_flat, neg_off = neg_flat.to(device), neg_off.to(device)
 
@@ -89,6 +91,7 @@ for epoch in range(0, EPOCHS):
 
         # compute scalar loss
         loss = criterion(q_vec, pos_vec, neg_vec)
+        
         # backward + step
         loss.backward()
         optimizer.step()
