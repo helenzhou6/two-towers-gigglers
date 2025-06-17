@@ -29,6 +29,9 @@ class KeyQueryDataset(IterableDataset):
 
             yield (query_indices, pos_sample_indices, neg_sample_indices)
 
+    def __len__(self):
+        return self.end - self.start
+
 def collate_fn_emb_bag(data_items):
     if not data_items:
         return None
