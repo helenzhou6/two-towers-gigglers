@@ -4,34 +4,19 @@ import json
 from two_towers import QryTower, DocTower
 from utils import load_model_path, init_wandb
 
+EPOCHS = 5
+
 # Loads embeddings and test out works
-init_wandb()
+init_wandb(5)
 ft_embedded_path = load_model_path('fasttext_tensor:latest')
 ft_state_dict = torch.load(ft_embedded_path)
 num_embeddings, embedding_dim = ft_state_dict["weight"].shape
-embedding = torch.nn.Embedding(num_embeddings, embedding_dim)
-embedding.load_state_dict(ft_state_dict) # Returns Embedding(100001, 300)
-
-def test_out_word2vec(query_word):
-    vocab_path = load_model_path('vocab:latest')
-    with open(vocab_path, "r") as f:
-        vocab = json.load(f)
-    idx_to_word = {int(idx): word for word, idx in vocab.items()}
-    query_vector = embedding(torch.tensor([vocab[query_word]]))
-    query_vector = F.normalize(query_vector, p=2, dim=1)
-    all_vecs = F.normalize(embedding.weight, p=2, dim=1)
-    cosine_sim = torch.mm(query_vector, all_vecs.T).squeeze(0)  # [vocab_size]
-    topk = torch.topk(cosine_sim, k=5)
-
-    for idx, score in zip(topk.indices, topk.values):
-        word = idx_to_word[idx.item()]
-        print(f"{word:10s} | similarity: {score.item():.4f}")
-
-test_out_word2vec("queen")
+embedding_bag = torch.nn.EmbeddingBag(num_embeddings, embedding_dim, mode="mean")
+embedding_bag.load_state_dict(ft_state_dict) # Returns Embedding(100001, 300)
 
 # Init Two Towers
-qryTower = QryTower(embedding)
-docTower = DocTower(embedding)
+qryTower = QryTower(embedding_bag)
+docTower = DocTower(embedding_bag)
 
 # Given Torch vector (1, 10)
 qry = torch.randn(1, 10)

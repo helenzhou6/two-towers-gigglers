@@ -1,7 +1,7 @@
 from dataloader import KeyQueryDataset, getKQDataLoader
 import json
 
-# May need to change the 
+# May need to change the file path
 W2IX_FILE_PATH = 'artifacts/vocab:v0/vocab.json'
 with open(W2IX_FILE_PATH) as file:
     w2ix = json.load(file)
@@ -11,5 +11,4 @@ datasample = next(iter(dataset))
 # print(type(datasample), len(datasample))
 dataloader = getKQDataLoader(dataset, batch_size=3)
 
-# TODO: Feed into EmbeddingBag
 print(next(iter(dataloader)))
