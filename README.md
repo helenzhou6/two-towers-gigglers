@@ -1,5 +1,8 @@
 # two-towers-gigglers
-
+TODO: 
+- Add loss logging to wandb
+- Design evaluations
+- Create and test vector DB application
 ## Dev set up
 - Python version 3.10.13
 - Install uv python package manager (https://github.com/astral-sh/uv)
