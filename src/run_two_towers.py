@@ -4,6 +4,7 @@ import json
 from two_towers import QryTower, DocTower
 from utils import load_model_path, init_wandb
 
+# Loads embeddings and test out works
 init_wandb()
 ft_embedded_path = load_model_path('fasttext_tensor:latest')
 ft_state_dict = torch.load(ft_embedded_path)
@@ -12,7 +13,8 @@ embedding = torch.nn.Embedding(num_embeddings, embedding_dim)
 embedding.load_state_dict(ft_state_dict) # Returns Embedding(100001, 300)
 
 def test_out_word2vec(query_word):
-    with open("data/vocab.json", "r") as f:
+    vocab_path = load_model_path('vocab:latest')
+    with open(vocab_path, "r") as f:
         vocab = json.load(f)
     idx_to_word = {int(idx): word for word, idx in vocab.items()}
     query_vector = embedding(torch.tensor([vocab[query_word]]))
@@ -25,11 +27,11 @@ def test_out_word2vec(query_word):
         word = idx_to_word[idx.item()]
         print(f"{word:10s} | similarity: {score.item():.4f}")
 
-test_out_word2vec("companies")
+test_out_word2vec("queen")
 
 # Init Two Towers
-qryTower = QryTower()
-docTower = DocTower()
+qryTower = QryTower(embedding)
+docTower = DocTower(embedding)
 
 # Given Torch vector (1, 10)
 qry = torch.randn(1, 10)

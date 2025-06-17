@@ -23,7 +23,6 @@ util.download_model('en', if_exists='ignore')  # English
 fasttext_model = fasttext.load_model('cc.en.300.bin')
 
 # === 1. Sample corpus ===
-# TODO: SWAP OUT THE BELOW!
 print('START: Concat Corpuses')
 corpus = pd.concat([pd.read_parquet(QUERY_DATA_FILE_PATH)["query"].drop_duplicates(), pd.read_parquet(DOCS_DATA_FILE_PATH)["doc"]])
 print('DONE: Concat Corpuses')
