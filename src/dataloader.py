@@ -4,7 +4,7 @@ import pandas as pd
 from fasttext.FastText import tokenize
 
 class KeyQueryDataset(IterableDataset):
-    def __init__(self,   word2idx =None,  query_data_file= 'data/query.parquet', 
+    def __init__(self, word2idx =None,  query_data_file= 'data/query.parquet', 
                  docs_data_file = 'data/docs.parquet', ): #num_negative_samples = 1,
         super().__init__()
         #TODO: Allow num_negative_samples to be set bigger than one
