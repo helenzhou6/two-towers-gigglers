@@ -9,7 +9,7 @@ import json
 from wandb_utils import init_wandb, save_model
 
 # === 0. Params ===
-MAX_VOCAB_SIZE = 10000
+MAX_VOCAB_SIZE = 20000
 EMBEDDING_DIM =  300
 QUERY_DATA_FILE_PATH = 'data/query.parquet'
 DOCS_DATA_FILE_PATH = 'data/docs.parquet'
@@ -21,7 +21,7 @@ ft = fasttext.load_model('cc.en.300.bin')
 
 # === 1. Sample corpus ===
 # TODO: SWAP OUT THE BELOW!
-corpus = pd.concat([pd.read_parquet(QUERY_DATA_FILE_PATH)["query"].drop_duplicates()[:20], pd.read_parquet(DOCS_DATA_FILE_PATH)["doc"][:20]])
+corpus = pd.concat([pd.read_parquet(QUERY_DATA_FILE_PATH)["query"].drop_duplicates(), pd.read_parquet(DOCS_DATA_FILE_PATH)["doc"]])
 
 # # === 2. Tokenize ===
 corpus_tokenized = corpus.apply(lambda row: tokenize(row)).sum()
@@ -33,9 +33,9 @@ word2idx = {word: idx for idx, (word, _) in enumerate(most_common)}
 
 word2idx['<UNK>'] = len(word2idx)  # Add unknown token
 
+print(f"writing vocab.json for {MAX_VOCAB_SIZE}")
 with open("data/vocab.json", "w") as file:
     json.dump(word2idx, file)
-
 
 vocab_size = len(word2idx)
 print("Vocab size:", vocab_size)
