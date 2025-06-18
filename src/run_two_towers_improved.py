@@ -8,16 +8,15 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 from utils import load_model_path, init_wandb, get_device, save_model
 from two_towers import QryTower, DocTower
-from dataloader import KeyQueryDataset, collate_fn_emb_bag, collate_fn_emb_bag_py, make_emb_bag_tensors
+from dataloader import KeyQueryDataset, collate_fn_emb_bag, collate_fn_emb_bag_py
 
 from torch.profiler import profile, record_function, ProfilerActivity
-
 
 def main():
     LEARNING_RATE = 0.02
     EPOCHS = 5
-    BATCH_SIZE = 1024
-    QUERY_END = 5_000_000
+    BATCH_SIZE = 64
+    QUERY_END = 5_000
     MARGIN = torch.tensor(0.2)
     device = get_device()
 
@@ -80,24 +79,22 @@ def main():
         count = 0
         batch_num = 1
         batch = []
-        queries = []
-        positives = []
-        negatives = []
-        
-        for data in tqdm(dataset):
-            (q, p, n) = data
-            queries.append(q)
-            positives.append(p)
-            negatives.append(n)
 
-            count += 1
+        for data in tqdm(dataset):
+            (query, pos, neg) = data
+            batch.append((torch.tensor(query),torch.tensor(pos), torch.tensor(neg)))
+            print(count)
+
             if count % BATCH_SIZE == 0:
                 print(f'training batch {batch_num}/{int(QUERY_END/BATCH_SIZE)}')
                 batch_num += 1                
                 count = 0
-                (q_flat, q_off, _) = make_emb_bag_tensors(queries, device)
-                (pos_flat, pos_off, _) = make_emb_bag_tensors(positives, device)
-                (neg_flat, neg_off, _) = make_emb_bag_tensors(negatives, device)
+                (q_flat, q_off), (pos_flat, pos_off), (neg_flat, neg_off) = collate_fn_emb_bag(batch)
+
+                # move to device
+                q_flat, q_off = q_flat.to(device, non_blocking=True), q_off.to(device, non_blocking=True)
+                pos_flat, pos_off = pos_flat.to(device, non_blocking=True), pos_off.to(device, non_blocking=True)
+                neg_flat, neg_off = neg_flat.to(device, non_blocking=True), neg_off.to(device, non_blocking=True)
 
                 # forward
                 optimizer.zero_grad()
@@ -122,7 +119,7 @@ def main():
 
                 total_loss += loss.item()
                 batch = []
-        # optional: wandb.log({"train_loss": avg_loss, "epoch": epoch})
+            count += 1
 
     torch.save(query_model.state_dict(), 'data/query_model.pt')
     save_model('query_model', 'The trained model for our queries')

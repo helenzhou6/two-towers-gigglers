@@ -67,11 +67,9 @@ def collate_fn_emb_bag(data_items):
     
     queries, pos_samples, neg_samples = zip(*data_items)
     
-    print(queries)
-
-    cat_queries = torch.cat(torch.tensor(queries))
-    cat_pos_samples = torch.cat(torch.tensor(pos_samples))
-    cat_neg_samples = torch.cat(torch.tensor(neg_samples))
+    cat_queries = torch.cat(queries)
+    cat_pos_samples = torch.cat(pos_samples)
+    cat_neg_samples = torch.cat(neg_samples)
 
     query_lengths = torch.tensor([t.numel() for t in queries], dtype=torch.long)
     # The offsets are the cumulative sum of the lengths, starting with 0
@@ -82,7 +80,6 @@ def collate_fn_emb_bag(data_items):
     
     neg_samples_lengths = torch.tensor([t.numel() for t in neg_samples], dtype=torch.long)
     neg_samples_offsets = torch.cat([torch.tensor([0]), neg_samples_lengths.cumsum(dim=0)[:-1]])
-
 
     return ((cat_queries, query_offsets), (cat_pos_samples, pos_samples_offsets), (cat_neg_samples, neg_samples_offsets))
 
