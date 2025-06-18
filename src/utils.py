@@ -30,9 +30,10 @@ def load_model_path(model_name):
     downloaded_model_path = wandb.use_model(model_name)
     return downloaded_model_path
 
-def load_artifact_path(artifact_name, version="latest"):
+def load_artifact_path(artifact_name, version="latest", file_extension = 'csv'):
     artifact = wandb.use_artifact(f"{artifact_name}:{version}")
-    return artifact.download()
+    directory = artifact.download()
+    return f"{directory}/{artifact_name}.{file_extension}"
 
 def get_device_string():
     if (torch.cuda.is_available()):

@@ -19,7 +19,6 @@ with open(vocab_path) as file:
 
 passage_text_series = training_df["passages"].apply(lambda row: row["passage_text"])
 
-
 # -- DOC DATASET
 # Unique rows, each row is a doc (string)
 all_doc_list = training_df["passages"].apply(lambda row: row["passage_text"]).explode().drop_duplicates().apply(lambda text: [word2idx.get(tok, word2idx.get("<UNK>")) for tok in tokenize(text)])
@@ -27,9 +26,9 @@ doc_data = {
     'doc': all_doc_list,
 }
 docs_df = pd.DataFrame(doc_data)
-docs_df.to_csv('data/query_processed.csv', index=False)
-save_model('query_processed', 'The processed query word indexes', 'csv', type='dataset')
-print('processed query...')
+docs_df.to_parquet('data/docs_processed.parquet', index=False)
+save_model('docs_processed', 'The processed docs word indexes', 'parquet', type='dataset')
+print('processed docs...')
 
 # -- QUERY DATASET
 query_data = {
@@ -43,6 +42,6 @@ def tokenize_row(row):
     return row
 
 query_df = pd.DataFrame(query_data).explode("doc").apply(tokenize_row, axis=1)
-query_df.to_csv('data/docs_processed.csv', index=False)
-save_model('docs_processed', 'The processed document word indexes', 'csv', type='dataset')
-print('processed docs...')
+query_df.to_parquet('data/query_processed.parquet', index=False)
+save_model('query_processed', 'The processed query word indexes', 'parquet', type='dataset')
+print('processed query...')
