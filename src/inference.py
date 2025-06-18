@@ -38,7 +38,6 @@ def prepare_embeddingbag_inputs(tokens, word2index):
     return (input_tensor, offsets)
 
 # TODO: Instead of the below, set up with the document vector database 
-
 candidate_docs = [
     ["example", "document", "text"],
     ["another", "sample", "doc"],

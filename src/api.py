@@ -10,9 +10,7 @@ class QueryRequest(BaseModel):
 
 @app.post("/search")
 def search(request: QueryRequest):
-    results = search_query(request.query)
-    return {"query": request.query, "top_matches": results}
-
+    return search_query(request.query)
 
 @app.get("/health-check")
 def healthcheck():
