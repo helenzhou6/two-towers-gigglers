@@ -144,18 +144,14 @@ def main():
             if num_batches % 100 == 0:
                 current_avg_loss = total_loss / num_batches
                 progress_bar.set_postfix({'avg_loss': f'{current_avg_loss:.4f}'})
-
-        scheduler.step()  # Update learning rate
         
         avg_loss = total_loss / num_batches
-        current_lr = scheduler.get_last_lr()[0]
-        print(f">>> Epoch {epoch+1} average loss: {avg_loss:.4f}, LR: {current_lr:.2e}")
+        print(f">>> Epoch {epoch+1} average loss: {avg_loss:.4f}")
         
         # Log metrics to wandb
         wandb.log({
             "train_loss": avg_loss, 
-            "epoch": epoch + 1,
-            "learning_rate": current_lr
+            "epoch": epoch + 1
         })
 
     # Save models
