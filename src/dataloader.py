@@ -1,10 +1,12 @@
 import random
-from utils import load_artifact_path, load_model_path
+from utils import get_device, load_artifact_path
 from torch.utils.data import IterableDataset, DataLoader
 import torch
 from tqdm import tqdm
 import pandas as pd
 from fasttext.FastText import tokenize
+
+device = get_device()
 
 class KeyQueryDataset(IterableDataset):
     def __init__(self, start, end, word2idx):
@@ -18,11 +20,9 @@ class KeyQueryDataset(IterableDataset):
         documents_path = load_artifact_path('docs_processed', file_extension='parquet')
         documents_processed = pd.read_parquet(documents_path)
 
-        print(queries_processed.columns)
-
-        self.queries = queries_processed['query']
-        self.positives = queries_processed["doc"]
-        self.negatives = documents_processed["doc"]
+        self.queries = [torch.tensor(query).to(device) for query in queries_processed['query']]
+        self.positives = [torch.tensor(doc).to(device) for doc in queries_processed["doc"]]
+        self.negatives = [torch.tensor(doc).to(device) for doc in documents_processed["doc"]]
 
         self.nq = len(self.queries)
         self.nd = len(self.negatives)
@@ -33,9 +33,9 @@ class KeyQueryDataset(IterableDataset):
             i = random.randrange(self.nq)
             j = random.randrange(self.nd)
             yield (
-                torch.tensor(self.queries[i]),
-                torch.tensor(self.positives[i]),
-                torch.tensor(self.negatives[j]),
+                self.queries[i],
+                self.positives[i],
+                self.negatives[j],
             )
 
     def __len__(self):
