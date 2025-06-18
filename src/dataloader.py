@@ -42,7 +42,24 @@ class KeyQueryDataset(IterableDataset):
     def __len__(self):
         return self.end - self.start
 
-
+def make_emb_bag_tensors(sequences, device='cpu'):
+    offset_length = len(sequences)
+    lengths = torch.tensor([len(s) for s in sequences], dtype=torch.long)
+    
+    # Option A: variable-length via EmbeddingBag
+    total_tokens = int(lengths.sum().item())
+    flat_idx = torch.empty(total_tokens, dtype=torch.long)
+    offsets  = torch.empty(offset_length, dtype=torch.long)
+    
+    pos = 0
+    for i, seq in enumerate(sequences):
+        item_length = lengths[i].item()
+        offsets[i] = pos
+        # write the slice
+        flat_idx[pos:pos+item_length] = torch.tensor(seq, dtype=torch.long)
+        pos += item_length
+    
+    return flat_idx.to(device, non_blocking=True), offsets.to(device, non_blocking=True), lengths.to(device, non_blocking=True)
 
 def collate_fn_emb_bag(data_items):
     if not data_items:
@@ -50,9 +67,11 @@ def collate_fn_emb_bag(data_items):
     
     queries, pos_samples, neg_samples = zip(*data_items)
     
-    cat_queries = torch.cat(queries)
-    cat_pos_samples = torch.cat(pos_samples)
-    cat_neg_samples = torch.cat(neg_samples)
+    print(queries)
+
+    cat_queries = torch.cat(torch.tensor(queries))
+    cat_pos_samples = torch.cat(torch.tensor(pos_samples))
+    cat_neg_samples = torch.cat(torch.tensor(neg_samples))
 
     query_lengths = torch.tensor([t.numel() for t in queries], dtype=torch.long)
     # The offsets are the cumulative sum of the lengths, starting with 0

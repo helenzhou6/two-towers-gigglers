@@ -8,7 +8,7 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 from utils import load_model_path, init_wandb, get_device, save_model
 from two_towers import QryTower, DocTower
-from dataloader import KeyQueryDataset, collate_fn_emb_bag_py
+from dataloader import KeyQueryDataset, collate_fn_emb_bag, collate_fn_emb_bag_py, make_emb_bag_tensors
 
 from torch.profiler import profile, record_function, ProfilerActivity
 
@@ -80,50 +80,48 @@ def main():
         count = 0
         batch_num = 1
         batch = []
+        queries = []
+        positives = []
+        negatives = []
+        
+        for data in tqdm(dataset):
+            (q, p, n) = data
+            queries.append(q)
+            positives.append(p)
+            negatives.append(n)
 
-        with profile(
-            activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA],
-            record_shapes=True,
-        ) as prof:
-            with record_function("model_training"):
-                for data in tqdm(dataset):
-                    batch.append(data)
-                    count += 1
-                    if count % BATCH_SIZE == 0:
-                        print('training batch {batch_num}/{BATCH_SIZE}')
-                        batch_num += 1                
-                        count = 0
-                        (q_flat, q_off), (pos_flat, pos_off), (neg_flat, neg_off) = collate_fn_emb_bag_py(batch)
+            count += 1
+            if count % BATCH_SIZE == 0:
+                print(f'training batch {batch_num}/{BATCH_SIZE}')
+                batch_num += 1                
+                count = 0
+                (q_flat, q_off, _) = make_emb_bag_tensors(queries, device)
+                (pos_flat, pos_off, _) = make_emb_bag_tensors(positives, device)
+                (neg_flat, neg_off, _) = make_emb_bag_tensors(negatives, device)
+                
+                # forward
+                optimizer.zero_grad()
 
-                        # move to device
-                        q_flat, q_off = torch.tensor(q_flat, device=device), torch.tensor(q_off, device=device)
-                        pos_flat, pos_off = torch.tensor(pos_flat, device=device), torch.tensor(pos_off, device=device)
-                        neg_flat, neg_off = torch.tensor(neg_flat, device=device), torch.tensor(neg_off, device=device)
+                q_vec = query_model((q_flat, q_off))
+                pos_vec = doc_model((pos_flat, pos_off))
+                neg_vec = doc_model((neg_flat, neg_off))
 
-                        # forward
-                        optimizer.zero_grad()
+                # compute scalar loss
+                loss = criterion(q_vec, pos_vec, neg_vec).to(device)
+                
+                # backward + step
+                loss.backward()
+                optimizer.step()
 
-                        q_vec = query_model((q_flat, q_off))
-                        pos_vec = doc_model((pos_flat, pos_off))
-                        neg_vec = doc_model((neg_flat, neg_off))
+                if os.getenv('DEBUG'):
+                    for name, param in doc_model.named_parameters():
+                        if param.grad is None:
+                            print(f"No grad for {name}")
+                        else:
+                            print(f"Grad for {name}: {param.grad.norm()}")
 
-                        # compute scalar loss
-                        loss = criterion(q_vec, pos_vec, neg_vec).to(device)
-                        
-                        # backward + step
-                        loss.backward()
-                        optimizer.step()
-
-                        if os.getenv('DEBUG'):
-                            for name, param in doc_model.named_parameters():
-                                if param.grad is None:
-                                    print(f"No grad for {name}")
-                                else:
-                                    print(f"Grad for {name}: {param.grad.norm()}")
-
-                        total_loss += loss.item()
-                        batch = []
-        print(prof.key_averages().table(sort_by="cuda_time_total", row_limit=10))
+                total_loss += loss.item()
+                batch = []
         # optional: wandb.log({"train_loss": avg_loss, "epoch": epoch})
 
     torch.save(query_model.state_dict(), 'data/query_model.pt')
@@ -131,10 +129,6 @@ def main():
 
     torch.save(doc_model.state_dict(), 'data/doc_model.pt')
     save_model('doc_model', 'The trained model for our documents')
-
-
-
-
 
 if __name__ == '__main__':
     mp.set_start_method("spawn", force=True)
