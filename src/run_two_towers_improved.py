@@ -13,7 +13,7 @@ from dataloader import KeyQueryDataset, collate_fn_emb_bag_py
 def main():
     LEARNING_RATE = 1e-3
     EPOCHS = 5
-    BATCH_SIZE = 128
+    BATCH_SIZE = 32
     QUERY_END = 5_000_000
     MARGIN = torch.tensor(0.2)
     device = get_device()
@@ -31,20 +31,20 @@ def main():
         freeze=True,
         padding_idx=ft_state_dict.get('padding_idx', None),
         mode='mean',
-        sparse=True
-    ).to(device)
+        sparse=True,
+    )
 
     embedding_bag_query = torch.nn.EmbeddingBag.from_pretrained(
         embeddings=ft_state_dict["weight"],
         freeze=True,
         padding_idx=ft_state_dict.get('padding_idx', None),
         mode='mean',
-        sparse=True
-    ).to(device)
+        sparse=True,
+    )
 
     # Init Two Towers
-    query_model = QryTower(embedding_bag_query).to(device)
-    doc_model = DocTower(embedding_bag_doc).to(device)
+    query_model = QryTower(embedding_bag_query)
+    doc_model = DocTower(embedding_bag_doc)
 
     wandb.watch(query_model, log="all", log_freq=100)
     wandb.watch(doc_model, log="all", log_freq=100)
@@ -78,19 +78,19 @@ def main():
             desc=f"Epoch {epoch+1}/{EPOCHS}"
         ):
             # move to device
-            q_flat, q_off = torch.tensor(q_flat, device=device), torch.tensor(q_off, device=device)
-            pos_flat, pos_off = torch.tensor(pos_flat, device=device), torch.tensor(pos_off, device=device)
-            neg_flat, neg_off = torch.tensor(neg_flat, device=device), torch.tensor(neg_off, device=device)
+            q_flat, q_off = torch.tensor(q_flat), torch.tensor(q_off)
+            pos_flat, pos_off = torch.tensor(pos_flat), torch.tensor(pos_off)
+            neg_flat, neg_off = torch.tensor(neg_flat), torch.tensor(neg_off)
 
             # forward
             optimizer.zero_grad()
 
-            q_vec = query_model((q_flat, q_off))
-            pos_vec = doc_model((pos_flat, pos_off))
-            neg_vec = doc_model((neg_flat, neg_off))
+            q_vec = query_model((q_flat, q_off)).to(device)
+            pos_vec = doc_model((pos_flat, pos_off)).to(device)
+            neg_vec = doc_model((neg_flat, neg_off)).to(device)
 
             # compute scalar loss
-            loss = criterion(q_vec, pos_vec, neg_vec)
+            loss = criterion(q_vec, pos_vec, neg_vec).to(device)
             
             # backward + step
             loss.backward()
