@@ -3,7 +3,7 @@ from datasets import load_dataset
 import pandas as pd
 import os
 from fasttext.FastText import tokenize
-from utils import init_wandb, load_model_path, save_model
+from utils import init_wandb, load_model_path, save_artifact
 
 init_wandb()
 
@@ -27,7 +27,7 @@ doc_data = {
 }
 docs_df = pd.DataFrame(doc_data)
 docs_df.to_parquet('data/docs_processed.parquet', index=False)
-save_model('docs_processed', 'The processed docs word indexes', 'parquet', type='dataset')
+save_artifact('docs_processed', 'The processed docs word indexes', 'parquet', type='dataset')
 print('processed docs...')
 
 # -- QUERY DATASET
@@ -43,5 +43,5 @@ def tokenize_row(row):
 
 query_df = pd.DataFrame(query_data).explode("doc").apply(tokenize_row, axis=1)
 query_df.to_parquet('data/query_processed.parquet', index=False)
-save_model('query_processed', 'The processed query word indexes', 'parquet', type='dataset')
+save_artifact('query_processed', 'The processed query word indexes', 'parquet', type='dataset')
 print('processed query...')

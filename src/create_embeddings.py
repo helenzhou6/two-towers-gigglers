@@ -7,7 +7,7 @@ from fasttext import util
 import json
 from tqdm import tqdm
 
-from utils import init_wandb, save_model
+from utils import init_wandb, save_artifact
 
 tqdm.pandas()
 
@@ -65,5 +65,5 @@ print(f"DONE: create vectors for tokenized words")
 # # === 6. Create Embedding layer ===
 embedding_layer = torch.nn.Embedding.from_pretrained(fasttext_tensor, freeze=False)
 torch.save(embedding_layer.state_dict(), 'data/fasttext_tensor.pt')
-save_model('fasttext_tensor', 'FastText embedding from data set')
-save_model('vocab', 'The indicies of our words in the vocabulary', file_extension='json')
+save_artifact('fasttext_tensor', 'FastText embedding from data set')
+save_artifact('vocab', 'The indicies of our words in the vocabulary', file_extension='json')

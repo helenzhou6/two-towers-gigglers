@@ -154,12 +154,10 @@ def main():
             "epoch": epoch + 1
         })
 
-    # Save models
-    os.makedirs('data', exist_ok=True)
-    torch.save(query_model.state_dict(), 'data/query_model.pt')
+    torch.save(query_model, 'data/query_model.pt')
     save_model('query_model', 'The trained model for our queries')
 
-    torch.save(doc_model.state_dict(), 'data/doc_model.pt')
+    torch.save(doc_model, 'data/doc_model.pt')
     save_model('doc_model', 'The trained model for our documents')
 
 if __name__ == '__main__':

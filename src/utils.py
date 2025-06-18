@@ -26,6 +26,15 @@ def save_model(model_name, model_description, file_extension = 'pt', type = "mod
     artifact.add_file(f"./data/{model_name}.{file_extension}")
     wandb.log_artifact(artifact)
 
+def save_artifact(model_name, model_description, file_extension = 'pt', type = "model"):
+    artifact = wandb.Artifact(
+        name=model_name,
+        type=type,
+        description=model_description
+    )
+    artifact.add_file(f"./data/{model_name}.{file_extension}")
+    wandb.log_artifact(artifact)
+
 def load_model_path(model_name):
     downloaded_model_path = wandb.use_model(model_name)
     return downloaded_model_path
