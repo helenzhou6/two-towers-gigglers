@@ -12,10 +12,10 @@ from two_towers import QryTower, DocTower
 from dataloader import KeyQueryDataset, collate_fn_emb_bag
 
 def main():
-    LEARNING_RATE = 2e-3  # Slightly higher LR for larger batches
+    LEARNING_RATE = 2e-3  # 0.002 Slightly higher LR for larger batches
     EPOCHS = 5
     BATCH_SIZE = 128  # Increased from 32 for better GPU utilization
-    QUERY_END = 5_000_000
+    QUERY_END = BATCH_SIZE * 1000
     MARGIN = torch.tensor(0.2)
     device = get_device()
 
