@@ -10,20 +10,15 @@ from fasttext.FastText import tokenize
 device = get_device()
 
 class KeyQueryDataset(Dataset):
-    def __init__(self, start, end, word2idx):
+    def __init__(self, start, end, word2idx, queries, positives, negatives):
         super().__init__()
         self.UNK = word2idx["<UNK>"]
+        # Store data as tensors up front to avoid per-batch conversion overhead
+        tensorize = lambda seqs: [torch.tensor(s, dtype=torch.long) for s in seqs]
 
-        # Pre-tokenize and convert to index lists once
-        queries_path = load_artifact_path('query_processed', file_extension='parquet')
-        queries_processed = pd.read_parquet(queries_path)
-        
-        documents_path = load_artifact_path('docs_processed', file_extension='parquet')
-        documents_processed = pd.read_parquet(documents_path)
-
-        self.queries = queries_processed['query'].tolist()
-        self.positives = queries_processed["doc"].tolist()
-        self.negatives = documents_processed["doc"].tolist()
+        self.queries = tensorize(queries)
+        self.positives = tensorize(positives)
+        self.negatives = tensorize(negatives)
 
         self.nq = len(self.queries)
         self.nd = len(self.negatives)
@@ -48,12 +43,6 @@ def collate_fn_emb_bag(data_items):
         return None
     
     queries, pos_samples, neg_samples = zip(*data_items)
-    
-    # Convert to tensors if they aren't already
-    if not isinstance(queries[0], torch.Tensor):
-        queries = [torch.tensor(q, dtype=torch.long) if not isinstance(q, torch.Tensor) else q for q in queries]
-        pos_samples = [torch.tensor(p, dtype=torch.long) if not isinstance(p, torch.Tensor) else p for p in pos_samples]
-        neg_samples = [torch.tensor(n, dtype=torch.long) if not isinstance(n, torch.Tensor) else n for n in neg_samples]
     
     # Concatenate all sequences
     cat_queries = torch.cat(queries, dim=0)
