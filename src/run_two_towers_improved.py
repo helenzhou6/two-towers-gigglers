@@ -91,6 +91,7 @@ def main():
                     batch.append(data)
                     count += 1
                     if count % BATCH_SIZE == 0:
+                        print('training batch {batch_num}/{BATCH_SIZE}')
                         batch_num += 1                
                         count = 0
                         (q_flat, q_off), (pos_flat, pos_off), (neg_flat, neg_off) = collate_fn_emb_bag_py(batch)
