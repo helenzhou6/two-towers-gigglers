@@ -28,7 +28,7 @@ num_embeddings, embedding_dim = ft_state_dict["weight"].shape
 
 embedding_bag_doc = embedding_bag_qry = torch.nn.EmbeddingBag.from_pretrained(
     embeddings=ft_state_dict["weight"],
-    freeze=False,
+    freeze=True,
     padding_idx=ft_state_dict.get('padding_idx', None),
     mode='mean',
     sparse=ft_state_dict.get('sparse', False)
@@ -36,7 +36,7 @@ embedding_bag_doc = embedding_bag_qry = torch.nn.EmbeddingBag.from_pretrained(
 
 embedding_bag_query = torch.nn.EmbeddingBag.from_pretrained(
     embeddings=ft_state_dict["weight"],
-    freeze=False,
+    freeze=True,
     padding_idx=ft_state_dict.get('padding_idx', None),
     mode='mean',
     sparse=ft_state_dict.get('sparse', False)

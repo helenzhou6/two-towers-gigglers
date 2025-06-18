@@ -17,10 +17,10 @@ def init_wandb(lr = None, epochs = None):
         },
     )
 
-def save_model(model_name, model_description, file_extension = 'pt'):
+def save_model(model_name, model_description, file_extension = 'pt', type = "model"):
     artifact = wandb.Artifact(
         name=model_name,
-        type="model",
+        type=type,
         description=model_description
     )
     artifact.add_file(f"./data/{model_name}.{file_extension}")
@@ -29,6 +29,10 @@ def save_model(model_name, model_description, file_extension = 'pt'):
 def load_model_path(model_name):
     downloaded_model_path = wandb.use_model(model_name)
     return downloaded_model_path
+
+def load_artifact_path(artifact_name, version="latest"):
+    artifact = wandb.use_artifact(f"{artifact_name}:{version}")
+    return artifact.download()
 
 def get_device_string():
     if (torch.cuda.is_available()):
