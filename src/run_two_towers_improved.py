@@ -66,8 +66,7 @@ vocab_path = load_model_path('vocab:latest')
 with open(vocab_path) as file:
     w2ix = json.load(file)
 
-dataset = KeyQueryDataset(start=0, end=QUERY_END, word2idx=w2ix, query_data_file='data/query.parquet', 
-                  docs_data_file='data/docs.parquet')
+dataset = KeyQueryDataset(start=0, end=QUERY_END, word2idx=w2ix)
 dataloader = DataLoader(dataset, batch_size=BATCH_SIZE, collate_fn=collate_fn_emb_bag)
 
 for epoch in range(0, EPOCHS):
