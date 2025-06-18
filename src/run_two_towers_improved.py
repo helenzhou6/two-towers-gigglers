@@ -79,7 +79,7 @@ def main():
         pin_memory=True if device.type == 'cuda' else False,
         persistent_workers=True if num_workers > 0 else False
     )
-    start = datetime.datetime.now()
+
     for epoch in range(0, EPOCHS):
         query_model.train()
         doc_model.train()
