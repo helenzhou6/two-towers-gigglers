@@ -16,9 +16,11 @@ def main():
     LEARNING_RATE = 0.02
     EPOCHS = 5
     BATCH_SIZE = 64
-    QUERY_END = 5_000
-    MARGIN = torch.tensor(0.2)
+    QUERY_END = 5_000_000
     device = get_device()
+
+    MARGIN = torch.tensor(0.2).to(device)
+
 
     print('Starting... Two Towers Document Search Training')
     print(f'Using device {device}.\n\n\n\n')
