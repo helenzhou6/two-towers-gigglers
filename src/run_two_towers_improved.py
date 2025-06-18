@@ -63,7 +63,7 @@ def main():
         margin=MARGIN,
         distance_function=lambda x, y: 1 - torch.nn.functional.cosine_similarity(x, y, dim=1),
         reduction='mean'
-    )
+    ).to(device)
 
     # May need to change the file path
     vocab_path = load_model_path('vocab:latest')
@@ -85,8 +85,6 @@ def main():
         for data in tqdm(dataset):
             (query, pos, neg) = data
             batch.append((torch.tensor(query),torch.tensor(pos), torch.tensor(neg)))
-            print(count)
-
             if count % BATCH_SIZE == 0:
                 print(f'training batch {batch_num}/{int(QUERY_END/BATCH_SIZE)}')
                 batch_num += 1                
@@ -106,7 +104,7 @@ def main():
                 neg_vec = doc_model((neg_flat, neg_off))
 
                 # compute scalar loss
-                loss = criterion(q_vec, pos_vec, neg_vec).to(device)
+                loss = criterion(q_vec, pos_vec, neg_vec)
                 
                 # backward + step
                 loss.backward()
