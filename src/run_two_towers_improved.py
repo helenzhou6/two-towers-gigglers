@@ -43,8 +43,8 @@ def main():
     )
 
     # Init Two Towers
-    query_model = QryTower(embedding_bag_query)
-    doc_model = DocTower(embedding_bag_doc)
+    query_model = QryTower(embedding_bag_query).to(device)
+    doc_model = DocTower(embedding_bag_doc).to(device)
 
     wandb.watch(query_model, log="all", log_freq=100)
     wandb.watch(doc_model, log="all", log_freq=100)
@@ -78,16 +78,16 @@ def main():
             desc=f"Epoch {epoch+1}/{EPOCHS}"
         ):
             # move to device
-            q_flat, q_off = torch.tensor(q_flat), torch.tensor(q_off)
-            pos_flat, pos_off = torch.tensor(pos_flat), torch.tensor(pos_off)
-            neg_flat, neg_off = torch.tensor(neg_flat), torch.tensor(neg_off)
+            q_flat, q_off = torch.tensor(q_flat, device=device), torch.tensor(q_off, device=device)
+            pos_flat, pos_off = torch.tensor(pos_flat, device=device), torch.tensor(pos_off, device=device)
+            neg_flat, neg_off = torch.tensor(neg_flat, device=device), torch.tensor(neg_off, device=device)
 
             # forward
             optimizer.zero_grad()
 
-            q_vec = query_model((q_flat, q_off)).to(device)
-            pos_vec = doc_model((pos_flat, pos_off)).to(device)
-            neg_vec = doc_model((neg_flat, neg_off)).to(device)
+            q_vec = query_model((q_flat, q_off))
+            pos_vec = doc_model((pos_flat, pos_off))
+            neg_vec = doc_model((neg_flat, neg_off))
 
             # compute scalar loss
             loss = criterion(q_vec, pos_vec, neg_vec).to(device)
