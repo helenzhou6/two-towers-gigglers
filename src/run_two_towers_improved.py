@@ -11,9 +11,9 @@ from two_towers import QryTower, DocTower
 from dataloader import KeyQueryDataset, collate_fn_emb_bag_py
 
 def main():
-    LEARNING_RATE = 1e-3
+    LEARNING_RATE = 0.02
     EPOCHS = 5
-    BATCH_SIZE = 32
+    BATCH_SIZE = 128
     QUERY_END = 5_000_000
     MARGIN = torch.tensor(0.2)
     device = get_device()
@@ -82,9 +82,7 @@ def main():
             batch.append(data)
             count += 1
             if count % BATCH_SIZE == 0:
-                batch_num += 1
-                print (f'Batch {batch_num}')
-                
+                batch_num += 1                
                 count = 0
                 (q_flat, q_off), (pos_flat, pos_off), (neg_flat, neg_off) = collate_fn_emb_bag_py(batch)
 
