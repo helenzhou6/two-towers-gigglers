@@ -8,7 +8,7 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 from utils import load_model_path, init_wandb, get_device, save_model
 from two_towers import QryTower, DocTower
-from dataloader import KeyQueryDataset, collate_fn_emb_bag_py
+from dataloader import KeyQueryDataset, collate_fn_emb_bag
 
 def main():
     LEARNING_RATE = 1e-3
@@ -66,9 +66,20 @@ def main():
     with open(vocab_path) as file:
         w2ix = json.load(file)
 
-    dataset = KeyQueryDataset(start=0, end=QUERY_END, word2idx=w2ix)
-    dataloader = DataLoader(dataset, batch_size=BATCH_SIZE, num_workers=0, collate_fn=collate_fn_emb_bag_py)
+        # Calculate optimal number of workers (usually num_cores - 1, but cap at 8 for memory)
+    num_workers = min(mp.cpu_count() - 1, 8) if mp.cpu_count() > 1 else 0
+    print(f'Using {num_workers} workers for data loading')
 
+    dataset = KeyQueryDataset(start=0, end=QUERY_END, word2idx=w2ix)
+    dataloader = DataLoader(
+        dataset, 
+        batch_size=BATCH_SIZE, 
+        num_workers=num_workers, 
+        collate_fn=collate_fn_emb_bag,
+        pin_memory=True if device.type == 'cuda' else False,
+        persistent_workers=True if num_workers > 0 else False
+    )
+    start = datetime.datetime.now()
     for epoch in range(0, EPOCHS):
         query_model.train()
         doc_model.train()
@@ -78,10 +89,13 @@ def main():
             desc=f"Epoch {epoch+1}/{EPOCHS}"
         ):
             # move to device
-            q_flat, q_off = torch.tensor(q_flat, device=device), torch.tensor(q_off, device=device)
-            pos_flat, pos_off = torch.tensor(pos_flat, device=device), torch.tensor(pos_off, device=device)
-            neg_flat, neg_off = torch.tensor(neg_flat, device=device), torch.tensor(neg_off, device=device)
-
+            q_flat = q_flat.to(device, non_blocking=True)
+            q_off = q_off.to(device, non_blocking=True)
+            pos_flat = pos_flat.to(device, non_blocking=True)
+            pos_off = pos_off.to(device, non_blocking=True)
+            neg_flat = neg_flat.to(device, non_blocking=True)
+            neg_off = neg_off.to(device, non_blocking=True)
+            
             # forward
             optimizer.zero_grad()
 
