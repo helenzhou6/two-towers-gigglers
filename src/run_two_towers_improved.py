@@ -16,8 +16,8 @@ from torch.profiler import profile, record_function, ProfilerActivity
 def main():
     LEARNING_RATE = 0.02
     EPOCHS = 5
-    BATCH_SIZE = 64
-    QUERY_END = 5_000
+    BATCH_SIZE = 1024
+    QUERY_END = 5_000_000
     MARGIN = torch.tensor(0.2)
     device = get_device()
 
@@ -98,7 +98,7 @@ def main():
                 (q_flat, q_off, _) = make_emb_bag_tensors(queries, device)
                 (pos_flat, pos_off, _) = make_emb_bag_tensors(positives, device)
                 (neg_flat, neg_off, _) = make_emb_bag_tensors(negatives, device)
-                
+
                 # forward
                 optimizer.zero_grad()
 
