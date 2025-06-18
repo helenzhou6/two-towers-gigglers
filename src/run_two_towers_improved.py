@@ -92,7 +92,7 @@ def main():
 
             count += 1
             if count % BATCH_SIZE == 0:
-                print(f'training batch {batch_num}/{BATCH_SIZE}')
+                print(f'training batch {batch_num}/{int(QUERY_END/BATCH_SIZE)}')
                 batch_num += 1                
                 count = 0
                 (q_flat, q_off, _) = make_emb_bag_tensors(queries, device)
