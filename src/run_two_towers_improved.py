@@ -47,10 +47,11 @@ def main():
     query_model = QryTower(embedding_bag_query).to(device)
     doc_model = DocTower(embedding_bag_doc).to(device)
 
+    #Compilation doesn't work well with embeddingbag
     # Compile models for better performance (PyTorch 2.0+)
-    if device.type == 'cuda':
-        query_model = torch.compile(query_model)
-        doc_model = torch.compile(doc_model)
+    # if device.type == 'cuda':
+    #     query_model = torch.compile(query_model)
+    #     doc_model = torch.compile(doc_model)
 
     wandb.watch(query_model, log="all", log_freq=100)
     wandb.watch(doc_model, log="all", log_freq=100)
@@ -73,7 +74,7 @@ def main():
         w2ix = json.load(file)
 
     # Calculate optimal number of workers (usually num_cores - 1, but cap at 8 for memory)
-    num_workers = 0 #min(mp.cpu_count() - 1, 8) if mp.cpu_count() > 1 else 0
+    num_workers = 0 #min(mp.cpu_count() - 1, 4) if mp.cpu_count() > 1 else 0
     print(f'Using {num_workers} workers for data loading')
 
     # Pre-tokenize and convert to index lists once
@@ -102,7 +103,7 @@ def main():
     for epoch in range(0, EPOCHS):
         query_model.train()
         doc_model.train()
-        total_loss = 0.0
+        total_loss = torch.tensor(0.0, device=device)
         num_batches = 0
         
         progress_bar = tqdm(dataloader, desc=f"Epoch {epoch+1}/{EPOCHS}")
@@ -124,7 +125,7 @@ def main():
             neg_vec = doc_model((neg_flat, neg_off))
 
             # compute scalar loss
-            loss = criterion(q_vec, pos_vec, neg_vec).to(device)
+            loss = criterion(q_vec, pos_vec, neg_vec)
             
             # backward + step
             loss.backward()
@@ -137,15 +138,15 @@ def main():
                     else:
                         print(f"Grad for {name}: {param.grad.norm()}")
 
-            total_loss += loss.item()
+            total_loss += loss.detach()
             num_batches += 1
             
             # Update progress bar with current loss
             if num_batches % 100 == 0:
-                current_avg_loss = total_loss / num_batches
+                current_avg_loss = total_loss.item() / num_batches
                 progress_bar.set_postfix({'avg_loss': f'{current_avg_loss:.4f}'})
         
-        avg_loss = total_loss / num_batches
+        avg_loss = total_loss.item() / num_batches
         print(f">>> Epoch {epoch+1} average loss: {avg_loss:.4f}")
         
         # Log metrics to wandb
