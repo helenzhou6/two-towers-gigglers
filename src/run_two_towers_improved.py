@@ -11,8 +11,8 @@ from dataloader import KeyQueryDataset, collate_fn_emb_bag, getKQDataLoader
 
 LEARNING_RATE = 1e-3
 EPOCHS = 5
-BATCH_SIZE = 5
-QUERY_END = 10000
+BATCH_SIZE = 64
+QUERY_END = 5_000_000
 MARGIN = torch.tensor(0.2)
 device = get_device()
 
