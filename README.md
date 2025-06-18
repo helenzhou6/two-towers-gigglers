@@ -24,7 +24,7 @@ TODO:
 
 ## Running the API & front end
 1. Start up Docker (e.g. `colima start`). 
-2. Run `docker-compose up -d` (runs in detached mode)
+2. Run `docker-compose up --build` (builds it at the same time)
 3. Ensure API is up and running with `uvicorn src.api:app --reload`
     - To check it is working, go to http://127.0.0.1:8000/health-check which should return a message
     - And to test the API with a query you can pass, run `./src/tests/test_api.sh` (you can alter the query here)
