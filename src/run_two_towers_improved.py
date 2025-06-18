@@ -52,14 +52,14 @@ wandb.watch(doc_model, log="all", log_freq=100)
 optimizer = torch.optim.Adam(
     list(query_model.parameters()) + list(doc_model.parameters()),
     lr=LEARNING_RATE
-)
+).to(device)
 
 # ── 4) Use the built-in triplet loss with cosine distance ───────────────────────
 criterion = torch.nn.TripletMarginWithDistanceLoss(
     margin=MARGIN,
     distance_function=lambda x, y: 1 - torch.nn.functional.cosine_similarity(x, y, dim=1),
     reduction='mean'
-)
+).to(device)
 
 # May need to change the file path
 vocab_path = load_model_path('vocab:latest')
@@ -85,7 +85,7 @@ for epoch in range(0, EPOCHS):
         # forward
         optimizer.zero_grad()
 
-        q_vec   = query_model((q_flat, q_off))
+        q_vec = query_model((q_flat, q_off))
         pos_vec = doc_model((pos_flat, pos_off))
         neg_vec = doc_model((neg_flat, neg_off))
 
