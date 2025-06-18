@@ -3,7 +3,7 @@
 import streamlit as st
 import requests
 
-MODEL_API_URL = "http://127.0.0.1:8000/search"
+MODEL_API_URL = "http://api:8000/search"
 
 st.title("Document Search")
 

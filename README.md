@@ -23,10 +23,17 @@ TODO:
 3. `run_two_towers.py` - this initialises two models (the query model and the doc model). These then get trained jointly - query model gets trained on queries, and doc model gets trained on the positive sample (an entry from query dataset), and a negative sample (what we deem to be a random document)
 
 ## Running the API & front end
-1. Ensure API is up and running with `uvicorn src.api:app --reload`
+1. Start up Docker (e.g. `colima start`). 
+2. Run `docker-compose up -d` (runs in detached mode)
+3. Ensure API is up and running with `uvicorn src.api:app --reload`
     - To check it is working, go to http://127.0.0.1:8000/health-check which should return a message
     - And to test the API with a query you can pass, run `./src/tests/test_api.sh` (you can alter the query here)
-2. Whilst ensuring the API is running, in another terminal run: `streamlit run src/streamlit_app.py`, where you can access the interface at: http://localhost:8501/
+4. Whilst ensuring the API is running, in another terminal run: `streamlit run src/streamlit_app.py`, where you can access the interface at: http://localhost:8501/
+
+## Running with docker compose
+1. Ensure .env is setup, with WANDB_API_KEY that is copied from wandb website
+2. Run `docker-compose up --build` to build all the docker containers etc
+    - If you want to cd into a specific docker container, go `docker container ls` to find the container id, then ` docker exec -it <container id> /bin/bash`
 
 ## Input dataset
 - Hugging face datasets: outputs validation, train and test datasets
