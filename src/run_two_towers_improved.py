@@ -67,46 +67,56 @@ def main():
         w2ix = json.load(file)
 
     dataset = KeyQueryDataset(start=0, end=QUERY_END, word2idx=w2ix)
-    dataloader = DataLoader(dataset, batch_size=BATCH_SIZE, num_workers=0, collate_fn=collate_fn_emb_bag_py)
+    # dataloader = DataLoader(dataset, batch_size=BATCH_SIZE, num_workers=0, collate_fn=collate_fn_emb_bag_py)
 
     for epoch in range(0, EPOCHS):
         query_model.train()
         doc_model.train()
         total_loss = 0.0
-        for (q_flat, q_off), (pos_flat, pos_off), (neg_flat, neg_off) in tqdm(
-            dataloader,
-            desc=f"Epoch {epoch+1}/{EPOCHS}"
-        ):
-            # move to device
-            q_flat, q_off = torch.tensor(q_flat, device=device), torch.tensor(q_off, device=device)
-            pos_flat, pos_off = torch.tensor(pos_flat, device=device), torch.tensor(pos_off, device=device)
-            neg_flat, neg_off = torch.tensor(neg_flat, device=device), torch.tensor(neg_off, device=device)
 
-            # forward
-            optimizer.zero_grad()
+        count = 0
+        batch_num = 1
+        batch = []
 
-            q_vec = query_model((q_flat, q_off))
-            pos_vec = doc_model((pos_flat, pos_off))
-            neg_vec = doc_model((neg_flat, neg_off))
+        for data in tqdm(dataset):
+            batch.append(data)
+            count += 1
+            if count % BATCH_SIZE == 0:
+                batch_num += 1
+                print (f'Batch {batch_num}')
+                
+                count = 0
+                (q_flat, q_off), (pos_flat, pos_off), (neg_flat, neg_off) = collate_fn_emb_bag_py(batch)
 
-            # compute scalar loss
-            loss = criterion(q_vec, pos_vec, neg_vec).to(device)
-            
-            # backward + step
-            loss.backward()
-            optimizer.step()
+                # move to device
+                q_flat, q_off = torch.tensor(q_flat, device=device), torch.tensor(q_off, device=device)
+                pos_flat, pos_off = torch.tensor(pos_flat, device=device), torch.tensor(pos_off, device=device)
+                neg_flat, neg_off = torch.tensor(neg_flat, device=device), torch.tensor(neg_off, device=device)
 
-            if os.getenv('DEBUG'):
-                for name, param in doc_model.named_parameters():
-                    if param.grad is None:
-                        print(f"No grad for {name}")
-                    else:
-                        print(f"Grad for {name}: {param.grad.norm()}")
+                # forward
+                optimizer.zero_grad()
 
-            total_loss += loss.item()
+                q_vec = query_model((q_flat, q_off))
+                pos_vec = doc_model((pos_flat, pos_off))
+                neg_vec = doc_model((neg_flat, neg_off))
 
-        avg_loss = total_loss / len(dataloader)
-        print(f">>> Epoch {epoch+1} average loss: {avg_loss:.4f}")
+                # compute scalar loss
+                loss = criterion(q_vec, pos_vec, neg_vec).to(device)
+                
+                # backward + step
+                loss.backward()
+                optimizer.step()
+
+                if os.getenv('DEBUG'):
+                    for name, param in doc_model.named_parameters():
+                        if param.grad is None:
+                            print(f"No grad for {name}")
+                        else:
+                            print(f"Grad for {name}: {param.grad.norm()}")
+
+                total_loss += loss.item()
+                batch = []
+
         # optional: wandb.log({"train_loss": avg_loss, "epoch": epoch})
 
     torch.save(query_model.state_dict(), 'data/query_model.pt')
@@ -114,6 +124,10 @@ def main():
 
     torch.save(doc_model.state_dict(), 'data/doc_model.pt')
     save_model('doc_model', 'The trained model for our documents')
+
+
+
+
 
 if __name__ == '__main__':
     mp.set_start_method("spawn", force=True)
