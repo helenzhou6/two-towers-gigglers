@@ -1,7 +1,14 @@
 import torch
 import wandb
 
-def init_wandb(lr = None, epochs = None):
+
+def init_wandb(config={}):
+    default_config = {
+        "learning_rate": 0.2,
+        "architecture": "Dual-encoder",
+        "dataset": "MS/Marco",
+        "epochs": 5,
+    }
     # Start a new wandb run to track this script.
     wandb.init(
         # Set the wandb entity where your project will be logged (generally your team name).
@@ -9,18 +16,15 @@ def init_wandb(lr = None, epochs = None):
         # Set the wandb project where this run will be logged.
         project="two-towers-gigglers",
         # Track hyperparameters and run metadata.
-        config={
-            "learning_rate": lr,
-            "architecture": "Dual-encoder",
-            "dataset": "MS/Marco",
-            "epochs": epochs,
-        },
+        config={**default_config, **config},
     )
 
-def save_model(model_name, file_extension = 'pt'):
+
+def save_model(model_name, file_extension='pt'):
     wandb.save(f'data/{model_name}.{file_extension}')
 
-def save_artifact(model_name, model_description, file_extension = 'pt', type = "model"):
+
+def save_artifact(model_name, model_description, file_extension='pt', type="model"):
     artifact = wandb.Artifact(
         name=model_name,
         type=type,
@@ -29,14 +33,17 @@ def save_artifact(model_name, model_description, file_extension = 'pt', type = "
     artifact.add_file(f"./data/{model_name}.{file_extension}")
     wandb.log_artifact(artifact)
 
+
 def load_model_path(model_name):
     downloaded_model_path = wandb.use_model(model_name)
     return downloaded_model_path
 
-def load_artifact_path(artifact_name, version="latest", file_extension = 'csv'):
+
+def load_artifact_path(artifact_name, version="latest", file_extension='csv'):
     artifact = wandb.use_artifact(f"{artifact_name}:{version}")
     directory = artifact.download()
     return f"{directory}/{artifact_name}.{file_extension}"
+
 
 def get_device_string():
     if (torch.cuda.is_available()):
@@ -45,6 +52,7 @@ def get_device_string():
     #     return "mps"
     else:
         return "cpu"
+
 
 def get_device():
     return torch.device(get_device_string())
