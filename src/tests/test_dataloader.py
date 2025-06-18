@@ -1,4 +1,5 @@
-from dataloader import KeyQueryDataset, getKQDataLoader
+from dataloader import KeyQueryDataset
+from torch.utils.data import DataLoader
 import json
 
 # May need to change the file path
@@ -9,6 +10,6 @@ dataset = KeyQueryDataset(0, 2, w2ix)
 datasample = next(iter(dataset))
 # print(datasample)
 # print(type(datasample), len(datasample))
-dataloader = getKQDataLoader(dataset, batch_size=3)
+dataloader = DataLoader(dataset, batch_size=3)
 
 print(next(iter(dataloader)))
