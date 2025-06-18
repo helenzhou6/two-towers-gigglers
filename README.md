@@ -22,6 +22,11 @@ TODO:
 2. (Optional - since the outputs are saved to wandb and those are used later) `create_embeddings.py` that will download the fasttext model and create vocab embeddings. This uploads the output (embeddings) to wandb, which can be accessed instead of running this file. Also uploads the vocab.json to wandb
 3. `run_two_towers.py` - this initialises two models (the query model and the doc model). These then get trained jointly - query model gets trained on queries, and doc model gets trained on the positive sample (an entry from query dataset), and a negative sample (what we deem to be a random document)
 
+## Running the API
+1. Ensure API is up and running with `uvicorn src.api:app --reload`
+    - To check it is working, go to http://127.0.0.1:8000/health-check which should return a message
+2. To test, run `./src/tests/test_api.sh` (you can alter the query here)
+
 ## Input dataset
 - Hugging face datasets: outputs validation, train and test datasets
 - Has 82326 rows - for query_id

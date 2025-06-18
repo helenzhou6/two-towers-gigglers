@@ -67,9 +67,3 @@ def search_query(query: str, num_doc=2):
         query_embedding = query_model(query_input)
 
     return get_top_docs(query_embedding, 2)
-
-query = "I am making a search of a document"
-results = search_query(query)
-for result in results:
-    print(result)
-
