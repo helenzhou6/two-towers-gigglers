@@ -84,7 +84,6 @@ def main():
         with profile(
             activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA],
             record_shapes=True,
-            with_stack=True
         ) as prof:
             with record_function("model_training"):
                 for data in tqdm(dataset):
