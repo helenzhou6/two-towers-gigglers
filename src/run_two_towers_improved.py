@@ -13,7 +13,7 @@ from dataloader import KeyQueryDataset, collate_fn_emb_bag
 def main():
     LEARNING_RATE = 1e-3
     EPOCHS = 5
-    BATCH_SIZE = 128
+    BATCH_SIZE = 32
     QUERY_END = 5_000_000
     MARGIN = torch.tensor(0.2)
     device = get_device()
@@ -31,16 +31,16 @@ def main():
         freeze=True,
         padding_idx=ft_state_dict.get('padding_idx', None),
         mode='mean',
-        sparse=True
-    ).to(device)
+        sparse=True,
+    )
 
     embedding_bag_query = torch.nn.EmbeddingBag.from_pretrained(
         embeddings=ft_state_dict["weight"],
         freeze=True,
         padding_idx=ft_state_dict.get('padding_idx', None),
         mode='mean',
-        sparse=True
-    ).to(device)
+        sparse=True,
+    )
 
     # Init Two Towers
     query_model = QryTower(embedding_bag_query).to(device)
@@ -104,7 +104,7 @@ def main():
             neg_vec = doc_model((neg_flat, neg_off))
 
             # compute scalar loss
-            loss = criterion(q_vec, pos_vec, neg_vec)
+            loss = criterion(q_vec, pos_vec, neg_vec).to(device)
             
             # backward + step
             loss.backward()
