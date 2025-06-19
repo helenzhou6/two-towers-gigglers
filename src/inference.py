@@ -18,7 +18,6 @@ embedding_bag.load_state_dict(ft_state_dict)
 vocab_path = load_model_path('vocab:latest')
 with open(vocab_path) as f:
     word2index = json.load(f)
-index2word = {v: k for k, v in word2index.items()}
 
 query_model_path = load_model_path('query_model:latest')
 query_model = QryTower(embedding_bag).to(device)
@@ -39,35 +38,34 @@ def prepare_embeddingbag_inputs(tokens, word2index):
     offsets = torch.tensor([0], dtype=torch.long).to(device)
     return (input_tensor, offsets)
 
-# TODO: Instead of the below, set up with the document tower
-# ds = dataset.Triplets(w2v.emb, words_to_ids)
-# db = torch.stack([doc_model(ds.to_emb(ds.docs[k]).to(dev)) for k in ds.d_keys])
+docs_path = load_artifact_path('docs', file_extension='parquet')
+docs = pd.read_parquet(docs_path)
+docs_processed_path = load_artifact_path('docs_processed', file_extension='parquet')
+docs_processed = pd.read_parquet(docs_processed_path)
+all_docs = pd.concat([
+    docs["doc"].rename("sentences"),
+    docs_processed["doc"].rename("tokenized")
+], axis=1)
 
-documents_path = load_artifact_path('docs_processed', file_extension='parquet')
-documents_processed = pd.read_parquet(documents_path)
-
-documents_processed["doc"] = documents_processed["doc"].apply(lambda list_indices: [index2word.get(index) for index in list_indices])
-print(documents_processed.head())
-
-candidate_docs = [
-    ["example", "document", "text"],
-    ["another", "sample", "doc"],
-    ["yet", "another", "document", "example"],
-]
-def get_top_docs(query_embedding, num_doc = 2):
-    similarities = [
-        torch.nn.functional.cosine_similarity(query_embedding, doc_model(prepare_embeddingbag_inputs(doc_tokens, word2index))).item()
-        for doc_tokens in candidate_docs
-    ]
-    top_indices = sorted(range(len(similarities)), key=similarities.__getitem__, reverse=True)[:num_doc]
-    return [
-        {
-            "rank": rank,
-            "doc": " ".join(candidate_docs[idx]),
-            "score": round(similarities[idx], 4)
-        }
-        for rank, idx in enumerate(top_indices, 1)
-    ]
+def get_top_docs(query_embedding, num_doc=2):
+    # Create a copy to avoid modifying the original DataFrame
+    df = all_docs.copy()
+    # Compute cosine similarity for each document
+    df["similarity"] = df["tokenized"].apply(
+        lambda doc_tokens: torch.nn.functional.cosine_similarity(
+            query_embedding,
+            doc_model(prepare_embeddingbag_inputs(doc_tokens, word2index))
+        ).item()
+    )
+    top_docs = (
+        df.sort_values(by="similarity", ascending=False)
+          .head(num_doc)
+          .reset_index(drop=True)
+    )
+    top_docs["rank"] = top_docs.index + 1
+    top_docs.loc[:, "title"] = top_docs["sentences"]
+    top_docs["score"] = top_docs["similarity"].round(4)
+    return top_docs[["rank", "title", "score"]].to_dict(orient="records")
 
 def search_query(query: str, num_doc=2):
     query_tokens = tokenize(query)
@@ -76,8 +74,8 @@ def search_query(query: str, num_doc=2):
     with torch.no_grad():
         query_embedding = query_model(query_input)
 
-    return get_top_docs(query_embedding, 2)
+    return get_top_docs(query_embedding, num_doc)
 
-results = search_query("sample doc")
+results = search_query("home pickled eggs causing botulism at room temperature")
 for result in results:
     print(result)
