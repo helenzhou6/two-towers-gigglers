@@ -92,27 +92,25 @@ def search_query(query: str, num_doc=5):
 
     base64_vec = query_vec.astype(np.float32).tobytes()
 
-    redis_query = f"""FT.SEARCH doc_idx "*"
-        RETURN 2 text embedding
-        PARAMS 2 vec "{base64_vec}"
-        DIALECT 2
-        SORTBY __embedding_score
-        LIMIT 0 {num_doc}
-        VECTOR => {{
-            "TYPE": "FLOAT32",
-            "DIM": 300,
-            "DISTANCE_METRIC": "COSINE",
-            "VECTOR": $vec,
-            "PROPERTY": "embedding"
-        }}"""
+    redis_query = [
+        "FT.SEARCH",
+        "doc_idx",
+        f"*=>[KNN {num_doc} @embedding $vec AS __embedding_score]",
+        "RETURN", "3", "text", "embedding", "__embedding_score",
+        "SORTBY", "__embedding_score",
+        "LIMIT", "0", str(num_doc),
+        "PARAMS", "2", "vec", base64_vec,
+        "DIALECT", "2",
+    ]
 
-    res = r.execute_command(*redis_query.split())
+    res = r.execute_command(*redis_query)
 
     # Parse Redis results
     results = []
     for i in range(1, len(res), 2):  # skip total count
-        doc = res[i + 1][1]  # get the 'text' field
-        score = 1.0  # Redis doesn't return score by default
+        print(res[i + 1])
+        doc = res[i + 1][4]  # get the 'text' field
+        score = float(res[i + 1][1]) # __embedding_score from above query
         results.append({
             "rank": len(results) + 1,
             "doc": doc.decode("utf-8") if isinstance(doc, bytes) else doc,
