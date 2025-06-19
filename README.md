@@ -17,7 +17,7 @@ TODO:
 
 ### Scripts to run
 1. `process_bing_dataset.py` will process the MS/Marcho dataset to create two datasets: 
-- docs dataset that has all the unique docs per pandas row saved to data/docs.parquet 
+- docs dataset that has all the unique docs per pandas row saved to data/docs_processed.parquet (that is the tokenized docs) and also data/docs.parquet (which is untokenized i.e. words)
 - data dataset that includes query (string), doc (string), and whether it was clicked (0/1), for all queries (we are going to assume these are all positive docs). Saved data/query.parquet
 2. (Optional - since the outputs are saved to wandb and those are used later) `create_embeddings.py` that will download the fasttext model and create vocab embeddings. This uploads the output (embeddings) to wandb, which can be accessed instead of running this file. Also uploads the vocab.json to wandb
 3. `run_two_towers.py` - this initialises two models (the query model and the doc model). These then get trained jointly - query model gets trained on queries, and doc model gets trained on the positive sample (an entry from query dataset), and a negative sample (what we deem to be a random document)

@@ -23,9 +23,15 @@ def process_and_save_dataset(SPLIT):
 
     # -- DOC DATASET
     # Unique rows, each row is a doc (string)
-    all_doc_list = split_df["passages"].apply(lambda row: row["passage_text"]).explode().drop_duplicates().apply(lambda text: [word2idx.get(tok, word2idx.get("<UNK>")) for tok in tokenize(text)])
+    all_docs = split_df["passages"].apply(lambda row: row["passage_text"]).explode().drop_duplicates()
+    all_docs.to_frame().to_parquet(f"data/docs", index=False)
+    save_artifact("docs", 'The processed docs word indexes', 'parquet', type='dataset')
+    print('saved docs to wandb')
+
+    all_docs_tokenized = all_docs.apply(lambda text: [word2idx.get(tok, word2idx.get("<UNK>")) for tok in tokenize(text)])
+    
     doc_data = {
-        'doc': all_doc_list,
+        'doc': all_docs_tokenized,
     }
     docs_df = pd.DataFrame(doc_data)
     if SPLIT == 'train':
