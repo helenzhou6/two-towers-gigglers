@@ -8,7 +8,7 @@ import multiprocessing as mp
 from torch.utils.data import DataLoader
 import pandas as pd
 from tqdm import tqdm
-from utils import load_model_path, init_wandb, get_device, save_model, load_artifact_path
+from utils import load_model_path, init_wandb, get_device, save_artifact, save_model, load_artifact_path
 from two_towers import QryTower, DocTower
 from dataloader import KeyQueryDataset, collate_fn_emb_bag
 from sweep_config import sweep_config
@@ -172,10 +172,10 @@ def train():
         })
 
     torch.save(query_model.state_dict(), 'data/query_model.pt')
-    save_model('query_model', 'The trained model for our queries')
+    save_artifact('query_model', 'The trained model for our queries')
 
     torch.save(doc_model.state_dict(), 'data/doc_model.pt')
-    save_model('doc_model', 'The trained model for our documents')
+    save_artifact('doc_model', 'The trained model for our documents')
 
 
 def main():
