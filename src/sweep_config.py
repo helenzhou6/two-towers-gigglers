@@ -8,13 +8,13 @@ sweep_config = {
         'learning_rate': {
             'min': 1e-4,
             'max': 1e-2,
-            'distribution': 'log_uniform'
+            'distribution': 'uniform'
         },
         'batch_size': {
             'values': [64, 128, 256]
         },
         'margin': {
-            'values': [0.1, 0.2, 0.5]
+            'values': [0.1, 0.2, 0.3, 0.5]
         },
         'epochs': {
             'value': 5
