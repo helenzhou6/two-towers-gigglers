@@ -7,7 +7,7 @@ from tqdm import tqdm
 import torch.nn.functional as F
 from sklearn.metrics import label_ranking_average_precision_score
 import numpy as np
-import faiss
+import hnswlib
 
 from torch.utils.data import DataLoader
 from utils import load_model_path, init_wandb, get_device, load_artifact_path
@@ -93,7 +93,7 @@ def evaluate_cmd(config):
 def evaluate(query_model, doc_model, k=5000):
     """
     Evaluates the model on the validation set using Mean Average Precision (MAP).
-    Uses faiss for efficient top-k retrieval.
+    Uses hnswlib for efficient top-k retrieval.
     """
 
     print("Starting evaluation...")
@@ -146,16 +146,22 @@ def evaluate(query_model, doc_model, k=5000):
             # Move to CPU to save GPU memory
             doc_embeddings.append(embeddings.cpu())
 
-    doc_index = torch.cat(doc_embeddings, dim=0).numpy() # Faiss requires numpy array
+    doc_index = torch.cat(doc_embeddings, dim=0).numpy()
     print(f"Document index created with shape: {doc_index.shape}")
 
-    # --- 3.5 Build Faiss Index ---
-    print(f"Building Faiss index for {doc_index.shape[0]} documents...")
+    # --- 3.5 Build hnswlib Index ---
+    print(f"Building hnswlib index for {doc_index.shape[0]} documents...")
     embedding_dim = doc_index.shape[1]
-    faiss_index = faiss.IndexFlatL2(embedding_dim) # Using L2 distance
-    faiss.normalize_L2(doc_index) # Normalize for cosine similarity search
-    faiss_index.add(doc_index)
-    print("Faiss index built.")
+    num_docs = doc_index.shape[0]
+
+    # Initialize the HNSWLIB index
+    # We use cosine space because we are interested in cosine similarity.
+    hnsw_index = hnswlib.Index(space='cosine', dim=embedding_dim)
+    hnsw_index.init_index(max_elements=num_docs, ef_construction=200, M=16)
+    hnsw_index.add_items(doc_index, np.arange(num_docs))
+    hnsw_index.set_ef(50) # Set ef for search, can be tuned for speed/accuracy trade-off
+
+    print("hnswlib index built.")
 
     # --- 4. Evaluate Queries ---
     print(f"Evaluating queries by retrieving top {k} documents...")
@@ -175,10 +181,9 @@ def evaluate(query_model, doc_model, k=5000):
             q_flat, q_off = q_flat.to(device), q_off.to(device)
             # Shape: [batch_size, emb_dim]
             q_vecs = query_model((q_flat, q_off)).cpu().numpy()
-            faiss.normalize_L2(q_vecs) # Normalize for cosine similarity search
 
-            # Search the Faiss index for the top k documents for the entire batch
-            similarity_scores, top_k_indices = faiss_index.search(q_vecs, k)
+            # Search the hnswlib index for the top k documents for the entire batch
+            top_k_indices, distances = hnsw_index.knn_query(q_vecs, k=k)
 
             # For each query in the batch, calculate its AP
             for j in range(q_vecs.shape[0]):
@@ -200,9 +205,9 @@ def evaluate(query_model, doc_model, k=5000):
                     average_precisions.append(0.0) # Score is 0 if no relevant docs are in top k
                     continue
 
-                # The similarity scores from Faiss are distances, we need to convert them to similarity
-                # We use 1 - distance for ranking (higher is better)
-                ranking_scores = 1 - similarity_scores[j]
+                # The distances from hnswlib in cosine space are "1 - cosine_similarity"
+                # To get a ranking score where higher is better, we use 1 - distance.
+                ranking_scores = 1 - distances[j]
 
                 # label_ranking_average_precision_score expects a 2D array of [n_samples, n_labels]
                 # Here, we have one sample (the query) and k_labels (the retrieved docs)
