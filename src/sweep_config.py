@@ -1,8 +1,8 @@
 sweep_config = {
     'method': 'bayes',  # Bayesian optimization
     'metric': {
-        'name': 'train_loss',
-        'goal': 'minimize'
+        'name': 'model_score',
+        'goal': 'maximize'
     },
     'parameters': {
         'learning_rate': {

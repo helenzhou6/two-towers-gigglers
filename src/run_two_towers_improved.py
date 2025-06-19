@@ -8,11 +8,11 @@ import multiprocessing as mp
 from torch.utils.data import DataLoader
 import pandas as pd
 from tqdm import tqdm
-from utils import load_model_path, init_wandb, get_device, save_model, load_artifact_path
+from utils import load_model_path, init_wandb, get_device, save_artifact, load_artifact_path
 from two_towers import QryTower, DocTower
 from dataloader import KeyQueryDataset, collate_fn_emb_bag
 from sweep_config import sweep_config
-
+from evaluate import evaluate
 
 def train():
     wandb.init()
@@ -23,10 +23,6 @@ def train():
     EPOCHS = config.epochs
     QUERY_END = BATCH_SIZE * 1000
     device = get_device()
-
-    wandb.config.learning_rate
-    wandb.config.learning_rate
-    wandb.config.learning_rate
 
     ft_embedded_path = load_model_path('fasttext_tensor:latest')
     ft_state_dict = torch.load(ft_embedded_path, map_location=device)
@@ -79,7 +75,7 @@ def train():
         w2ix = json.load(file)
 
     # Calculate optimal number of workers (usually num_cores - 1, but cap at 8 for memory)
-    num_workers = 0 #min(mp.cpu_count() - 1, 4) if mp.cpu_count() > 1 else 0
+    num_workers = 0  # min(mp.cpu_count() - 1, 4) if mp.cpu_count() > 1 else 0
     print(f'Using {num_workers} workers for data loading')
 
     # Pre-tokenize and convert to index lists once
@@ -160,35 +156,42 @@ def train():
         avg_loss = total_loss / num_batches
         print(f">>> Epoch {epoch+1} average loss: {avg_loss:.4f}")
 
-        # Log metrics to wandb
-        wandb.log({
-            "train_loss": avg_loss,
-            "epoch": epoch + 1
-        })
+        if config.evaluate:
+            score = evaluate(query_model, doc_model)
+            # Log metrics to wandb
+            wandb.log({
+                "train_loss": avg_loss,
+                "epoch": epoch + 1,
+                "model_score": score
+            })
 
     torch.save(query_model.state_dict(), 'data/query_model.pt')
-    save_model('query_model', 'The trained model for our queries')
+    save_artifact('query_model', 'The trained model for our queries')
 
     torch.save(doc_model.state_dict(), 'data/doc_model.pt')
-    save_model('doc_model', 'The trained model for our documents')
+    save_artifact('doc_model', 'The trained model for our documents')
 
 
 def main():
-    # Default hyperparameters
-    default_config = {
-        'learning_rate': 2e-3,
-        'batch_size':     128,
-        'margin':         0.2,
-        'epochs':         5
-    }
-    init_wandb(
-        config=default_config
-    )
 
     parser = argparse.ArgumentParser(description='Two-Tower Training')
     parser.add_argument('--sweep', action='store_true',
                         help='Run a W&B sweep instead of a single training run')
+    parser.add_argument('--evaluate', action='store_true',
+                        help='We will run a results evaluation of the model and store the data for the scores in wandb')
     args = parser.parse_args()
+
+    # Default hyperparameters
+    default_config = {
+        'learning_rate': 2e-3,
+        'batch_size': 128,
+        'margin': 0.2,
+        'epochs': 5,
+        'evaluate': args.evaluate
+    }
+    init_wandb(
+        config=default_config
+    )
 
     if args.sweep:
         sweep_id = wandb.sweep(
@@ -199,7 +202,6 @@ def main():
         wandb.agent(sweep_id, function=train, count=20)
     else:
         train()
-
 
 if __name__ == '__main__':
     mp.set_start_method("spawn", force=True)
