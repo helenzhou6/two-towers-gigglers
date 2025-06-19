@@ -48,26 +48,27 @@ all_docs = pd.concat([
 ], axis=1)
 
 def get_top_docs(query_embedding, num_doc=2):
-    # Create a copy to avoid modifying the original DataFrame
-    df = all_docs.copy()
-    # Compute cosine similarity for each document
-    df["similarity"] = df["tokenized"].apply(
-        lambda doc_tokens: torch.nn.functional.cosine_similarity(
-            query_embedding,
-            doc_model(prepare_embeddingbag_inputs(doc_tokens, word2index))
-        ).item()
-    )
-    top_docs = (
-        df.sort_values(by="similarity", ascending=False)
-          .head(num_doc)
-          .reset_index(drop=True)
-    )
-    top_docs["rank"] = top_docs.index + 1
-    top_docs.loc[:, "title"] = top_docs["sentences"]
-    top_docs["score"] = top_docs["similarity"].round(4)
-    return top_docs[["rank", "title", "score"]].to_dict(orient="records")
+    doc_embeddings = []
+    for tokens in all_docs["tokenized"]:
+        doc_tensor = doc_model(prepare_embeddingbag_inputs(tokens, word2index))
+        doc_embeddings.append(doc_tensor.squeeze(0))  # Ensure shape [300]
 
-def search_query(query: str, num_doc=2):
+    db = torch.stack(doc_embeddings)  # Now shape [num_docs, 300]
+    query_embedding = query_embedding.squeeze(0)
+
+    res = torch.nn.functional.cosine_similarity(db, query_embedding, dim=1)
+    top_scr, top_idx = torch.topk(res, k=num_doc)
+    return [
+        {
+            "rank": rank + 1,
+            "title": all_docs.iloc[i.item()]["sentences"],
+            "score": round(s.item(), 4)
+        }
+        for rank, (s, i) in enumerate(zip(top_scr, top_idx))
+    ]
+
+
+def search_query(query: str, num_doc=5):
     query_tokens = tokenize(query)
     query_input = prepare_embeddingbag_inputs(query_tokens, word2index)
 
@@ -76,6 +77,7 @@ def search_query(query: str, num_doc=2):
 
     return get_top_docs(query_embedding, num_doc)
 
-results = search_query("home pickled eggs causing botulism at room temperature")
-for result in results:
-    print(result)
+# TO TEST, run:
+# results = search_query("home pickled eggs causing botulism at room temperature")
+# for result in results:
+#     print(result)
