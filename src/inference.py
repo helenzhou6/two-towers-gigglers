@@ -51,7 +51,6 @@ def get_top_docs(query_embedding, num_doc=2):
     doc_embeddings = []
     for tokens in all_docs["tokenized"]:
         doc_tensor = doc_model(prepare_embeddingbag_inputs(tokens))
-        # TODO here
         doc_embeddings.append(doc_tensor.squeeze(0))  # Ensure shape [300]
 
     db = torch.stack(doc_embeddings)  # Now shape [num_docs, 300]
@@ -71,7 +70,6 @@ def get_top_docs(query_embedding, num_doc=2):
 
 
 def search_query(query: str, num_doc=5):
-    print("Received query...")
     query_tokens = tokenize(query)
 
     query_indices = [word2index[t] for t in query_tokens if t in word2index]
@@ -85,8 +83,3 @@ def search_query(query: str, num_doc=5):
         query_embedding = query_model(query_input)
 
     return get_top_docs(query_embedding, num_doc)
-
-# TO TEST, run:
-# results = search_query("home pickled eggs causing botulism at room temperature")
-# for result in results:
-#     print(result)
