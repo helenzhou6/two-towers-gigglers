@@ -167,7 +167,6 @@ def train():
 
 
 def main():
-
     parser = argparse.ArgumentParser(description='Two-Tower Training')
     parser.add_argument('--sweep', action='store_true',
                         help='Run a W&B sweep instead of a single training run')
