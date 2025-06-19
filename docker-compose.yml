@@ -26,16 +26,17 @@ services:
     entrypoint: >
       sh -c "
         echo 'Running Redis init...';
-        redis-cli -a redis-password -h redis < /redis/scripts/init_commands.txt;
+        redis-cli -h redis < /redis/scripts/init_commands.txt;
         echo 'Init complete.';
       "
     volumes:
-      - ./redis:/redis:ro
+      - ./redis/scripts:/redis/scripts:ro
     restart: "no"
+
   redisinsight:
     image: redis/redisinsight:latest
     ports:
-      - "8001:8001"
+      - "5540:5540"
     depends_on:
       - redis
 
@@ -49,22 +50,24 @@ services:
         condition: service_healthy
     ports:
       - "8000:8000"
-    env_file:
-      - .env
     environment:
       - WANDB_API_KEY=${WANDB_API_KEY}
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - REDIS_PASSWORD=redis-password
+    volumes:
+      - wandb-data:/app/data
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: frontend
+    depends_on:
+      - api
+    ports:
+      - "8501:8501"
+    environment:
+      - API_URL=http://api:8000
 
-  # frontend:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile.frontend
-  #   container_name: frontend
-  #   depends_on:
-  #     - api
-  #   ports:
-  #     - "8501:8501"
-  #   environment:
-  #     - API_URL=http://api:8000
+volumes:
+  wandb-data:

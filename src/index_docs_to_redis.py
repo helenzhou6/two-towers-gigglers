@@ -6,12 +6,12 @@ from two_towers import DocTower
 import pandas as pd
 import json
 
-REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
+REDIS_HOST = os.getenv("REDIS_HOST", "redis")
 REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
-REDIS_PASSWORD = os.getenv("REDIS_PASSWORD")
+REDIS_PASSWORD = os.getenv("REDIS_PASSWORD", "redis-password")
 
 init_wandb()
-r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, password=REDIS_PASSWORD)
+r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT)
 
 device = get_device()
 

@@ -43,7 +43,8 @@ ENV PYTHONPATH="./src"
 # Expose API port
 EXPOSE 8000
 
-# Start the app
-# CMD sh -c "python3 src/index_docs_to_redis.py && uvicorn src.api:app --host 0.0.0.0 --port 8000"
-# CMD ["uvicorn", "src.api:app", "--host", "0.0.0.0", "--port", "8000"]
-CMD ["tail", "-f", "/dev/null"]
+RUN chmod +x ./scripts/api-entrypoint.sh
+
+# (d) Use the script as the container’s entrypoint
+ENTRYPOINT ["./scripts/api-entrypoint.sh"] 
+CMD []

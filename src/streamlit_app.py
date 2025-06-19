@@ -4,7 +4,7 @@ import streamlit as st
 import requests
 import os
 
-API_URL = os.getenv('API_URL', "http://localhost:8000")
+API_URL = os.getenv('API_URL', "http://api:8000")
 HEALTH_URL = f"{API_URL}/health-check"
 
 st.markdown("""
@@ -33,16 +33,16 @@ def check_api_status():
 api_available = check_api_status()
 
 if api_available:
-    st.success(f"✅ API is running at {API_URL}")
+    st.success(f"✅ API is running at {HEALTH_URL}")
 else:
-    st.error(f"❌ API is not available at {API_URL}. Please check the server and refresh.")
+    st.error(f"❌ API is not available at {HEALTH_URL}. Please check the server and refresh.")
 
 st.title("🔍 Doci-bot 🤖")
 
 query = st.text_input("Enter your search query:")
 
 # Disable Search button if API is down
-if st.button("Search", disabled=not api_available):
+if st.button("Search"):
     if not query.strip():
         st.warning("Please enter a query.")
     else:

@@ -1,3 +1,6 @@
+import os
+import numpy as np
+import redis
 import torch
 from two_towers import QryTower, DocTower
 from utils import get_device, load_model_path, init_wandb, load_artifact_path
@@ -75,60 +78,63 @@ def _get_doc_stack():
             doc_embeddings.append(doc_tensor.squeeze(0))  # Ensure shape [300]
     return torch.stack(doc_embeddings)  # Now shape [num_docs, 300]
 
-# def search_query(query: str, num_doc=5):
-#     from fasttext.FastText import tokenize
-#     query_tokens = tokenize(query)
-#     query_indices = [word2index.get(t, word2index.get("<UNK>")) for t in query_tokens]
-#     input_tensor = torch.tensor(query_indices, dtype=torch.long).to(device)
-#     offsets = torch.tensor([0], dtype=torch.long).to(device)
-
-#     with torch.no_grad():
-#         query_vec = query_model((input_tensor, offsets)).squeeze(0).cpu().numpy()
-
-#     base64_vec = query_vec.astype(np.float32).tobytes()
-
-#     redis_query = f"""FT.SEARCH doc_idx "*"
-#         RETURN 2 text embedding
-#         PARAMS 2 vec "{base64_vec}"
-#         DIALECT 2
-#         SORTBY __embedding_score
-#         LIMIT 0 {num_doc}
-#         VECTOR => {{
-#             "TYPE": "FLOAT32",
-#             "DIM": 300,
-#             "DISTANCE_METRIC": "COSINE",
-#             "VECTOR": $vec,
-#             "PROPERTY": "embedding"
-#         }}"""
-
-#     res = r.execute_command("FT.SEARCH", *redis_query.split())
-
-#     # Parse Redis results
-#     results = []
-#     for i in range(1, len(res), 2):  # skip total count
-#         doc = res[i + 1][1]  # get the 'text' field
-#         score = 1.0  # Redis doesn't return score by default
-#         results.append({
-#             "rank": len(results) + 1,
-#             "doc": doc.decode("utf-8") if isinstance(doc, bytes) else doc,
-#             "score": round(score, 4)
-#         })
-
-#     return results
-
-# --- The function to run! See test folder to test run this ---
 def search_query(query: str, num_doc=5):
-    query_embedding = _query_to_embedding(query)
-    print("Starting to search for top docs...")
-    doc_stack = _get_doc_stack()
-    res = torch.nn.functional.cosine_similarity(doc_stack, query_embedding, dim=1)
-    top_scr, top_idx = torch.topk(res, k=num_doc)
+    REDIS_HOST = os.getenv("REDIS_HOST", "redis")
+    REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
+    r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT)
 
-    return [
-        {
-            "rank": rank + 1,
-            "doc": all_docs["sentences"][i.item()],
-            "score": round(s.item(), 4)
-        }
-        for rank, (s, i) in enumerate(zip(top_scr, top_idx))
-    ]
+    query_tokens = tokenize(query)
+    query_indices = [word2index.get(t, word2index.get("<UNK>")) for t in query_tokens]
+    input_tensor = torch.tensor(query_indices, dtype=torch.long).to(device)
+    offsets = torch.tensor([0], dtype=torch.long).to(device)
+
+    with torch.no_grad():
+        query_vec = query_model((input_tensor, offsets)).squeeze(0).cpu().numpy()
+
+    base64_vec = query_vec.astype(np.float32).tobytes()
+
+    redis_query = f"""FT.SEARCH doc_idx "*"
+        RETURN 2 text embedding
+        PARAMS 2 vec "{base64_vec}"
+        DIALECT 2
+        SORTBY __embedding_score
+        LIMIT 0 {num_doc}
+        VECTOR => {{
+            "TYPE": "FLOAT32",
+            "DIM": 300,
+            "DISTANCE_METRIC": "COSINE",
+            "VECTOR": $vec,
+            "PROPERTY": "embedding"
+        }}"""
+
+    res = r.execute_command("FT.SEARCH", *redis_query.split())
+
+    # Parse Redis results
+    results = []
+    for i in range(1, len(res), 2):  # skip total count
+        doc = res[i + 1][1]  # get the 'text' field
+        score = 1.0  # Redis doesn't return score by default
+        results.append({
+            "rank": len(results) + 1,
+            "doc": doc.decode("utf-8") if isinstance(doc, bytes) else doc,
+            "score": round(score, 4)
+        })
+
+    return results
+
+# # --- The function to run! See test folder to test run this ---
+# def search_query(query: str, num_doc=5):
+#     query_embedding = _query_to_embedding(query)
+#     print("Starting to search for top docs...")
+#     doc_stack = _get_doc_stack()
+#     res = torch.nn.functional.cosine_similarity(doc_stack, query_embedding, dim=1)
+#     top_scr, top_idx = torch.topk(res, k=num_doc)
+
+#     return [
+#         {
+#             "rank": rank + 1,
+#             "doc": all_docs["sentences"][i.item()],
+#             "score": round(s.item(), 4)
+#         }
+#         for rank, (s, i) in enumerate(zip(top_scr, top_idx))
+#     ]
