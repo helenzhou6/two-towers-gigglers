@@ -210,9 +210,9 @@ def evaluate(query_model, doc_model, k=5000):
                     average_precisions.append(0.0) # Score is 0 if no relevant docs are in top k
                     continue
 
-                # The similarity scores from Faiss are distances, we need to convert them to similarity
-                # We use 1 - distance for ranking (higher is better)
-                ranking_scores = 1 - similarity_scores[j]
+                # The similarity scores from Faiss are squared L2 distances.
+                # Convert to cosine similarity: cos(sim) = 1 - (d^2 / 2)
+                ranking_scores = 1 - (similarity_scores[j] / 2)
 
                 # label_ranking_average_precision_score expects a 2D array of [n_samples, n_labels]
                 # Here, we have one sample (the query) and k_labels (the retrieved docs)
