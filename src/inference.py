@@ -9,7 +9,7 @@ device = get_device()
 init_wandb()
 
 ft_embedded_path = load_model_path('fasttext_tensor:latest')
-ft_state_dict = torch.load(ft_embedded_path)
+ft_state_dict = torch.load(ft_embedded_path, map_location=device)
 num_embeddings, embedding_dim = ft_state_dict["weight"].shape
 embedding_bag = torch.nn.EmbeddingBag(num_embeddings, embedding_dim, mode="mean")
 embedding_bag.load_state_dict(ft_state_dict)
@@ -20,12 +20,12 @@ with open(vocab_path) as f:
 
 query_model_path = load_model_path('query_model:latest')
 query_model = QryTower(embedding_bag).to(device)
-query_model.load_state_dict(torch.load(query_model_path))
+query_model.load_state_dict(torch.load(query_model_path, map_location=device))
 query_model.eval()
 
 doc_model_path = load_model_path('doc_model:latest')
 doc_model = DocTower(embedding_bag).to(device)
-doc_model.load_state_dict(torch.load(doc_model_path))
+doc_model.load_state_dict(torch.load(doc_model_path, map_location=device))
 doc_model.eval()
 
 def prepare_embeddingbag_inputs(tokens, word2index):
@@ -37,7 +37,10 @@ def prepare_embeddingbag_inputs(tokens, word2index):
     offsets = torch.tensor([0], dtype=torch.long).to(device)
     return (input_tensor, offsets)
 
-# TODO: Instead of the below, set up with the document vector database 
+# TODO: Instead of the below, set up with the document tower
+
+# ds = dataset.Triplets(w2v.emb, words_to_ids)
+# db = torch.stack([doc_model(ds.to_emb(ds.docs[k]).to(dev)) for k in ds.d_keys])
 candidate_docs = [
     ["example", "document", "text"],
     ["another", "sample", "doc"],
@@ -66,3 +69,7 @@ def search_query(query: str, num_doc=2):
         query_embedding = query_model(query_input)
 
     return get_top_docs(query_embedding, 2)
+
+results = search_query("sample doc")
+for result in results:
+    print(result)
