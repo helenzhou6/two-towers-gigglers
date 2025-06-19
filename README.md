@@ -26,12 +26,13 @@ TODO:
 
 1. `process_bing_dataset.py` will process the MS/Marcho dataset to create two datasets:
 
-- docs dataset that has all the unique docs per pandas row saved to data/docs_processed.parquet (that is the tokenized docs) and also data/docs.parquet (which is untokenized i.e. words)
-- data dataset that includes query (string), doc (string), and whether it was clicked (0/1), for all queries (we are going to assume these are all positive docs). Saved data/query.parquet
+- docs dataset that has all the unique docs per pandas row saved to data/docs_processed.parquet (that is the tokenized docs) and also data/docs.parquet (which is untokenized i.e. words) & uploaded to wandb
+- data dataset that includes query (string), doc (string), and whether it was clicked (0/1), for all queries (we are going to assume these are all positive docs). Saved data/query.parquet & uploaded to wandb
 
 2. (Optional - since the outputs are saved to wandb and those are used later) `create_embeddings.py` that will download the fasttext model and create vocab embeddings. This uploads the output (embeddings) to wandb, which can be accessed instead of running this file. Also uploads the vocab.json to wandb
 3. `train_two_towers.py` - this initialises two models (the query model and the doc model). These then get trained jointly - query model gets trained on queries, and doc model gets trained on the positive sample (an entry from query dataset), and a negative sample (what we deem to be a random document)
 4. `evaluate.py` - this will evaluate a specified model on the validation dataset and will return the [mean average precision](<https://en.wikipedia.org/wiki/Evaluation_measures_(information_retrieval)#Mean_average_precision>) score. Example usage: `uv run src/evaluate.py --query_model_artifact query_model:latest --doc_model_artifact doc_model:latest`. This requires the validation set to be downloaded (`uv run src/process_bing_dataset.py --split validation`)
+5. `inference.py` - this will run the models (based on latest), and make an inference based on a query (string) being passed through (either via running the test file, or through the frontend).
 
 ## Running the API & front end
 
