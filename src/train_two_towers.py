@@ -151,7 +151,7 @@ def train():
         print(f">>> Epoch {epoch+1} average loss: {avg_loss:.4f}")
 
         if config.evaluate:
-            score = evaluate(query_model, doc_model)
+            score = evaluate(query_model, doc_model, k=1000)
             # Log metrics to wandb
             wandb.log({
                 "train_loss": avg_loss,

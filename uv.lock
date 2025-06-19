@@ -330,33 +330,6 @@ wheels = [
 ]
 
 [[package]]
-name = "faiss-cpu"
-version = "1.8.0.post1"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "numpy" },
-    { name = "packaging" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/5e/a3/7213833216238e7dd7ef9f9a3a66bfb1ae24235e7fd32aad75afa3e78f3f/faiss_cpu-1.8.0.post1.tar.gz", hash = "sha256:5686af34414678c3d49c4fa8d774df7156e9cb48d7029071e56230e74b01cc13", size = 63668 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/a3/6c/025d4b55e81c23b63ce093880afa5944f7f5cdc1a93e7a10b0f67fcc26b5/faiss_cpu-1.8.0.post1-cp310-cp310-macosx_10_14_x86_64.whl", hash = "sha256:fd84721eb599aa1da19b1b36345bb8705a60bb1d2887bbbc395a29e3d36a1a62", size = 7345861 },
-    { url = "https://files.pythonhosted.org/packages/1f/22/231e1b30cf7d90da6a59bf6169c509ae62d3c3b1e9a88b702c267cd25e41/faiss_cpu-1.8.0.post1-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:b78ff9079d15fd0f156bf5dd8a2975a8abffac1854a86ece263eec1500a2e836", size = 5979513 },
-    { url = "https://files.pythonhosted.org/packages/78/f1/40dc20554510728ee35d0aaa7aae1820fffd673ab04d44f76413dad55754/faiss_cpu-1.8.0.post1-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:9de25c943d1789e35fe06a20884c88cd32aedbb1a33bb8da2238cdea7bd9633f", size = 3554885 },
-    { url = "https://files.pythonhosted.org/packages/87/da/d0caea09df6b6b3ef1dc6662154e095e1049c3881d841609c2438eb17e80/faiss_cpu-1.8.0.post1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:adae0f1b144e7216da696f14bc4991ca4300c94baaa59247c3d322588e661c95", size = 27045888 },
-    { url = "https://files.pythonhosted.org/packages/42/c6/48fcc1368b3bf6a72fc4d9311d24a2d9bac2735a7de5be640b8babcd24e2/faiss_cpu-1.8.0.post1-cp310-cp310-win_amd64.whl", hash = "sha256:00345290680a444a4b4cb2d98a3844bb5c401a2160fee547c7631d759fd2ec3e", size = 14588028 },
-    { url = "https://files.pythonhosted.org/packages/17/d2/c90a810b594d11f66b0162a08415029b7e056243a5023a7d5c719353a057/faiss_cpu-1.8.0.post1-cp311-cp311-macosx_10_14_x86_64.whl", hash = "sha256:8d4bade10cb63e9f9ff261751edd7eb097b1f4bf30be4d0d25d6f688559d795e", size = 7345873 },
-    { url = "https://files.pythonhosted.org/packages/44/90/a21e37b01a302b8bcf1f30747eae1812d43f45e7f1a08bfa7da28c6647ce/faiss_cpu-1.8.0.post1-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:20bd43eca3b7d77e71ea56b7a558cc28e900d8abff417eb285e2d92e95d934d4", size = 5979514 },
-    { url = "https://files.pythonhosted.org/packages/c5/d2/32832d55f6ef6e4ac9316fd4169b1c62c88c4e0248b8e76499308b7d100e/faiss_cpu-1.8.0.post1-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:8542a87743a7f94ac656fd3e9592ad57e58b04d961ad2fe654a22a8ca59defdb", size = 3555039 },
-    { url = "https://files.pythonhosted.org/packages/76/6c/256239bd142101cd2ce50d920622ab6d5a03742eabc462db49d7910c69c7/faiss_cpu-1.8.0.post1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:ed46928de3dc20170b10fec89c54075a11383c2aaf4f119c63e0f6ae5a507d74", size = 27045872 },
-    { url = "https://files.pythonhosted.org/packages/4c/e1/657eb537027b2d7aa0f0ccfc58aee6fe0252ea3d9e49472aecc5c7f30992/faiss_cpu-1.8.0.post1-cp311-cp311-win_amd64.whl", hash = "sha256:4fa5fc8ea210b919aa469e27d6687e50052db906e7fec3f2257178b1384fa18b", size = 14588251 },
-    { url = "https://files.pythonhosted.org/packages/e5/4f/5d063231073917edfe1af57d1fcb2e281f60eca64694fb062428d80a1966/faiss_cpu-1.8.0.post1-cp312-cp312-macosx_10_14_x86_64.whl", hash = "sha256:96aec0d08a3099883af3a9b6356cfe736e8bd879318a940a27e9d1ae6f33d788", size = 7376527 },
-    { url = "https://files.pythonhosted.org/packages/75/b9/eb43cbcbdc8c1177f1f275659920fb002c18e381253efb7f6431471f87df/faiss_cpu-1.8.0.post1-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:92b06147fa84732ecdc965922e8ef50dc7011ef8be65821ff4abb2118cb5dce0", size = 5983954 },
-    { url = "https://files.pythonhosted.org/packages/19/5e/1fd33bee1ad83c12467d2850ecb7d9a6d28afb9a2c7aa88b92dfe75f3167/faiss_cpu-1.8.0.post1-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:709ef9394d1148aef70dbe890edbde8c282a4a2e06a8b69ab64f65e90f5ba572", size = 3559706 },
-    { url = "https://files.pythonhosted.org/packages/ba/91/6460e628d7d1cfbce2f1a62bdd617619e2d8fb3d4428b5e4a1e2858aeb61/faiss_cpu-1.8.0.post1-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:327a9c30971bf72cd8392b15eb4aff5d898c453212eae656dfaa3ba555b9ca0c", size = 27046631 },
-    { url = "https://files.pythonhosted.org/packages/3a/0a/d18ff177cab09587918b6e67ce75b7e0a2b90ea0b4fdc7c3535cca39c5e8/faiss_cpu-1.8.0.post1-cp312-cp312-win_amd64.whl", hash = "sha256:8756f1d93faba56349883fa2f5d47fe36bb2f11f789200c6b1c691ef805485f2", size = 14591209 },
-]
-
-[[package]]
 name = "fastapi"
 version = "0.115.13"
 source = { registry = "https://pypi.org/simple" }
@@ -619,6 +592,15 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/9d/af/b49debecac06674a9ccb51353f497300199d6122a7612f56930872076147/hiredis-3.2.1-pp310-pypy310_pp73-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:8b7f34b170093c077c972b8cc0ceb15d8ff88ad0079751a8ae9733e94d77e733", size = 48905 },
     { url = "https://files.pythonhosted.org/packages/c6/a2/5aacf68320bfaf531afac73f62f4fc55140742a4725bf04929671ca5d1cc/hiredis-3.2.1-pp310-pypy310_pp73-win_amd64.whl", hash = "sha256:291a18b228fc90f6720d178de2fac46522082c96330b4cc2d3dd8cb2c1cb2815", size = 22184 },
 ]
+
+[[package]]
+name = "hnswlib"
+version = "0.8.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "numpy" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/cf/7a/1a9b1405f2eb59515f06c3074750b03e0e96edf7fee0f6dd6df81d9c21d7/hnswlib-0.8.0.tar.gz", hash = "sha256:cb6d037eedebb34a7134e7dc78966441dfd04c9cf5ee93911be911ced951c44c", size = 36206 }
 
 [[package]]
 name = "huggingface-hub"
@@ -2043,9 +2025,9 @@ version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "datasets" },
-    { name = "faiss-cpu" },
     { name = "fastapi" },
     { name = "fasttext" },
+    { name = "hnswlib" },
     { name = "numpy" },
     { name = "pandas" },
     { name = "redis" },
@@ -2062,9 +2044,9 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "datasets", specifier = ">=2.14.4" },
-    { name = "faiss-cpu", specifier = ">=1.7.4" },
     { name = "fastapi", specifier = ">=0.115.13" },
     { name = "fasttext", specifier = ">=0.9.3" },
+    { name = "hnswlib", specifier = ">=0.8.0" },
     { name = "numpy", specifier = "==1.23" },
     { name = "pandas", specifier = ">=1.5.1" },
     { name = "redis", specifier = ">=6.2.0" },
