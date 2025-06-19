@@ -51,7 +51,7 @@ def train():
     query_model = QryTower(embedding_bag_query).to(device)
     doc_model = DocTower(embedding_bag_doc).to(device)
 
-    #Compilation doesn't work well with embeddingbag
+    # Compilation doesn't work well with embeddingbag
     # Compile models for better performance (PyTorch 2.0+)
     # if device.type == 'cuda':
     #     query_model = torch.compile(query_model)
@@ -134,7 +134,7 @@ def train():
 
             # compute scalar loss
             loss = criterion(q_vec, pos_vec, neg_vec)
-            
+
             loss = criterion(q_vec, pos_vec, neg_vec).to(device)
 
             # backward + step
@@ -154,10 +154,6 @@ def train():
             # Update progress bar with current loss
             if num_batches % 100 == 0:
                 current_avg_loss = total_loss.item() / num_batches
-                progress_bar.set_postfix({'avg_loss': f'{current_avg_loss:.4f}'})
-        
-        avg_loss = total_loss.item() / num_batches
-                current_avg_loss = total_loss / num_batches
                 progress_bar.set_postfix(
                     {'avg_loss': f'{current_avg_loss:.4f}'})
 
