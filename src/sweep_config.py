@@ -18,6 +18,9 @@ sweep_config = {
         },
         'epochs': {
             'value': 5
+        },
+        'evaluate': {
+          'value': False
         }
     }
 }

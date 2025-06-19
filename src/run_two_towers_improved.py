@@ -194,6 +194,7 @@ def main():
     )
 
     if args.sweep:
+        sweep_config['parameters']['evaluate']['value'] = args.evaluate
         sweep_id = wandb.sweep(
             sweep=sweep_config,
             project='two-towers-gigglers',
