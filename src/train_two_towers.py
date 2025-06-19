@@ -158,12 +158,14 @@ def train():
                 "epoch": epoch + 1,
                 "model_score": score
             })
+            print(f'Mean Average Precision: {score}')
     
     print('Final deeper evaluation')
     score = evaluate(query_model, doc_model)
     wandb.log({
-        "model_score": score
+        "final_model_score": score
     })
+    print(f'Mean Average Precision: {score}')
 
     torch.save(query_model.state_dict(), 'data/query_model.pt')
     save_artifact('query_model', 'The trained model for our queries')
