@@ -82,7 +82,6 @@ def search_query(query: str, num_doc=5):
     REDIS_HOST = os.getenv("REDIS_HOST", "redis")
     REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
     r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT)
-
     query_tokens = tokenize(query)
     query_indices = [word2index.get(t, word2index.get("<UNK>")) for t in query_tokens]
     input_tensor = torch.tensor(query_indices, dtype=torch.long).to(device)
@@ -107,7 +106,7 @@ def search_query(query: str, num_doc=5):
             "PROPERTY": "embedding"
         }}"""
 
-    res = r.execute_command("FT.SEARCH", *redis_query.split())
+    res = r.execute_command(*redis_query.split())
 
     # Parse Redis results
     results = []
