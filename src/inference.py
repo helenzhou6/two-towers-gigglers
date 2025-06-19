@@ -108,7 +108,7 @@ def search_query(query: str, num_doc=5):
     # Parse Redis results
     results = []
     for i in range(1, len(res), 2):  # skip total count
-        doc = res[i + 1][4]  # get the 'text' field
+        doc = res[i + 1][3]  # get the 'text' field
         score = float(res[i + 1][1]) # __embedding_score from above query
         results.append({
             "rank": len(results) + 1,
