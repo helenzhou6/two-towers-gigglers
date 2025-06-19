@@ -1,8 +1,9 @@
 import torch
 from two_towers import QryTower, DocTower
-from utils import get_device, load_model_path, init_wandb
+from utils import get_device, load_model_path, init_wandb, load_artifact_path
 import json
 from fasttext.FastText import tokenize
+import pandas as pd
 
 device = get_device()
 
@@ -17,6 +18,7 @@ embedding_bag.load_state_dict(ft_state_dict)
 vocab_path = load_model_path('vocab:latest')
 with open(vocab_path) as f:
     word2index = json.load(f)
+index2word = {v: k for k, v in word2index.items()}
 
 query_model_path = load_model_path('query_model:latest')
 query_model = QryTower(embedding_bag).to(device)
@@ -29,18 +31,24 @@ doc_model.load_state_dict(torch.load(doc_model_path, map_location=device))
 doc_model.eval()
 
 def prepare_embeddingbag_inputs(tokens, word2index):
-    idxs = [word2index[t] for t in tokens if t in word2index]
-    unknown_index = word2index.get("<UNK>", 0)
-    if not idxs:
-        idxs = [unknown_index]
-    input_tensor = torch.tensor(idxs, dtype=torch.long).to(device)
+    indices = [word2index[t] for t in tokens if t in word2index]
+    unknown_index = word2index.get("<UNK>", len(tokens))
+    if not indices:
+        indices = [unknown_index]
+    input_tensor = torch.tensor(indices, dtype=torch.long).to(device)
     offsets = torch.tensor([0], dtype=torch.long).to(device)
     return (input_tensor, offsets)
 
 # TODO: Instead of the below, set up with the document tower
-
 # ds = dataset.Triplets(w2v.emb, words_to_ids)
 # db = torch.stack([doc_model(ds.to_emb(ds.docs[k]).to(dev)) for k in ds.d_keys])
+
+documents_path = load_artifact_path('docs_processed', file_extension='parquet')
+documents_processed = pd.read_parquet(documents_path)
+
+documents_processed["doc"] = documents_processed["doc"].apply(lambda list_indices: [index2word.get(index) for index in list_indices])
+print(documents_processed.head())
+
 candidate_docs = [
     ["example", "document", "text"],
     ["another", "sample", "doc"],
