@@ -21,7 +21,7 @@ def train():
     BATCH_SIZE = config.batch_size
     MARGIN = torch.tensor(config.margin)
     EPOCHS = config.epochs
-    QUERY_END = BATCH_SIZE * 1000
+    QUERY_END = BATCH_SIZE * 100
     device = get_device()
 
     ft_embedded_path = load_model_path('fasttext_tensor:latest')
@@ -29,29 +29,23 @@ def train():
 
     embedding_bag_doc = torch.nn.EmbeddingBag.from_pretrained(
         embeddings=ft_state_dict["weight"],
-        freeze=True,
+        freeze=False,
         padding_idx=ft_state_dict.get('padding_idx', None),
         mode='mean',
-        sparse=True,
+        sparse=False,
     )
 
     embedding_bag_query = torch.nn.EmbeddingBag.from_pretrained(
         embeddings=ft_state_dict["weight"],
-        freeze=True,
+        freeze=False,
         padding_idx=ft_state_dict.get('padding_idx', None),
         mode='mean',
-        sparse=True,
+        sparse=False,
     )
 
     # Init Two Towers
     query_model = QryTower(embedding_bag_query).to(device)
     doc_model = DocTower(embedding_bag_doc).to(device)
-
-    # Compilation doesn't work well with embeddingbag
-    # Compile models for better performance (PyTorch 2.0+)
-    # if device.type == 'cuda':
-    #     query_model = torch.compile(query_model)
-    #     doc_model = torch.compile(doc_model)
 
     wandb.watch(query_model, log="all", log_freq=100)
     wandb.watch(doc_model, log="all", log_freq=100)

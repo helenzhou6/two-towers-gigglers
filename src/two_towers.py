@@ -11,7 +11,7 @@ class QryTower(torch.nn.Module):
             torch.nn.Linear(self.emb_dim, self.emb_dim)
         )
         
-    def forward(self, x):                       # shape: (batch_size, 1)
+    def forward(self, x):
         return self.layers(self.embedding(*x))
 
 class DocTower(torch.nn.Module):
