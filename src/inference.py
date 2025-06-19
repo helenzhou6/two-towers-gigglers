@@ -6,6 +6,8 @@ from fasttext.FastText import tokenize
 import pandas as pd
 
 device = get_device()
+QUERY_MODEL_VERSION = "latest"
+DOC_MODEL_VERSION = "latest"
 
 init_wandb()
 
@@ -19,12 +21,12 @@ vocab_path = load_model_path('vocab:latest')
 with open(vocab_path) as f:
     word2index = json.load(f)
 
-query_model_path = load_model_path('query_model:latest')
+query_model_path = load_model_path(f'query_model:{QUERY_MODEL_VERSION}')
 query_model = QryTower(embedding_bag).to(device)
 query_model.load_state_dict(torch.load(query_model_path, map_location=device))
 query_model.eval()
 
-doc_model_path = load_model_path('doc_model:latest')
+doc_model_path = load_model_path(f'doc_model:{DOC_MODEL_VERSION}')
 doc_model = DocTower(embedding_bag).to(device)
 doc_model.load_state_dict(torch.load(doc_model_path, map_location=device))
 doc_model.eval()
@@ -48,6 +50,7 @@ all_docs = pd.concat([
 ], axis=1)
 
 def get_top_docs(query_embedding, num_doc=2):
+    print("Starting to search for top docs...")
     doc_embeddings = []
     for tokens in all_docs["tokenized"]:
         doc_tensor = doc_model(prepare_embeddingbag_inputs(tokens, word2index))
@@ -61,7 +64,7 @@ def get_top_docs(query_embedding, num_doc=2):
     return [
         {
             "rank": rank + 1,
-            "title": all_docs.iloc[i.item()]["sentences"],
+            "doc": all_docs.iloc[i.item()]["sentences"],
             "score": round(s.item(), 4)
         }
         for rank, (s, i) in enumerate(zip(top_scr, top_idx))
@@ -69,6 +72,7 @@ def get_top_docs(query_embedding, num_doc=2):
 
 
 def search_query(query: str, num_doc=5):
+    print("Received query...")
     query_tokens = tokenize(query)
     query_input = prepare_embeddingbag_inputs(query_tokens, word2index)
 
@@ -78,6 +82,6 @@ def search_query(query: str, num_doc=5):
     return get_top_docs(query_embedding, num_doc)
 
 # TO TEST, run:
-# results = search_query("home pickled eggs causing botulism at room temperature")
-# for result in results:
-#     print(result)
+results = search_query("home pickled eggs causing botulism at room temperature")
+for result in results:
+    print(result)

@@ -24,12 +24,14 @@ TODO:
 4. `evaluate.py` - this will evaluate a specified model on the validation dataset and will return the [mean average precision](https://en.wikipedia.org/wiki/Evaluation_measures_(information_retrieval)#Mean_average_precision) score. Example usage: `uv run src/evaluate.py --query_model_artifact query_model:latest --doc_model_artifact doc_model:latest`. This requires the validation set to be downloaded (`uv run src/process_bing_dataset.py --split validation`)
 
 ## Running the API & front end
+### Docker way
 1. Start up Docker (e.g. `colima start`). 
 2. Run `docker-compose up --build` (builds it at the same time)
-3. Ensure API is up and running with `uvicorn src.api:app --reload`
+### Non-docker way
+1. Run API with `uvicorn src.api:app --reload` (ensure `export PYTHONPATH=./src` has been run)
     - To check it is working, go to http://127.0.0.1:8000/health-check which should return a message
     - And to test the API with a query you can pass, run `./src/tests/test_api.sh` (you can alter the query here)
-4. Whilst ensuring the API is running, in another terminal run: `streamlit run src/streamlit_app.py`, where you can access the interface at: http://localhost:8501/
+2. Whilst ensuring the API is running, in another terminal run: `streamlit run src/streamlit_app.py`, where you can access the interface at: http://localhost:8501/
 
 ## Running with docker compose
 1. Ensure .env is setup, with WANDB_API_KEY that is copied from wandb website
