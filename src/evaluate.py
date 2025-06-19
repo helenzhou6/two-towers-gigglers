@@ -7,6 +7,7 @@ from tqdm import tqdm
 import torch.nn.functional as F
 from sklearn.metrics import label_ranking_average_precision_score
 import numpy as np
+import faiss
 
 from torch.utils.data import DataLoader
 from utils import load_model_path, init_wandb, get_device, load_artifact_path
@@ -78,19 +79,21 @@ def evaluate_cmd(config):
     doc_model = DocTower(embedding_bag).to(device)
     doc_model.load_state_dict(torch.load(doc_model_path, map_location=device))
 
-    mean_average_precision = evaluate(query_model, doc_model)
+    k = config.get('k', 5000) # Get k from config, default to 5000
+    mean_average_precision = evaluate(query_model, doc_model, k=k)
 
     print(f"---" * 10)
-    print(f"📈 Mean Average Precision (MAP): {mean_average_precision:.4f}")
+    print(f"📈 Mean Average Precision (MAP@{k}): {mean_average_precision:.4f}")
     print(f"---" * 10)
 
     if config.get("wandb_log", False):
         wandb.log({"validation_map": mean_average_precision})
 
 
-def evaluate(query_model, doc_model):
+def evaluate(query_model, doc_model, k=5000):
     """
     Evaluates the model on the validation set using Mean Average Precision (MAP).
+    Uses faiss for efficient top-k retrieval.
     """
 
     print("Starting evaluation...")
@@ -143,11 +146,19 @@ def evaluate(query_model, doc_model):
             # Move to CPU to save GPU memory
             doc_embeddings.append(embeddings.cpu())
 
-    doc_index = torch.cat(doc_embeddings, dim=0)
+    doc_index = torch.cat(doc_embeddings, dim=0).numpy() # Faiss requires numpy array
     print(f"Document index created with shape: {doc_index.shape}")
 
+    # --- 3.5 Build Faiss Index ---
+    print(f"Building Faiss index for {doc_index.shape[0]} documents...")
+    embedding_dim = doc_index.shape[1]
+    faiss_index = faiss.IndexFlatL2(embedding_dim) # Using L2 distance
+    faiss.normalize_L2(doc_index) # Normalize for cosine similarity search
+    faiss_index.add(doc_index)
+    print("Faiss index built.")
+
     # --- 4. Evaluate Queries ---
-    print("Evaluating queries...")
+    print(f"Evaluating queries by retrieving top {k} documents...")
     average_precisions = []
 
     # Ensure data is in the expected list-of-lists-of-ints format
@@ -163,36 +174,41 @@ def evaluate(query_model, doc_model):
         for i, (q_flat, q_off) in enumerate(tqdm(query_dataloader, desc="Evaluating Queries")):
             q_flat, q_off = q_flat.to(device), q_off.to(device)
             # Shape: [batch_size, emb_dim]
-            q_vecs = query_model((q_flat, q_off)).cpu()
+            q_vecs = query_model((q_flat, q_off)).cpu().numpy()
+            faiss.normalize_L2(q_vecs) # Normalize for cosine similarity search
 
-            # Calculate cosine similarity between each query and all docs
-            similarity_scores = F.cosine_similarity(
-                q_vecs.unsqueeze(1), doc_index.unsqueeze(0), dim=2)
+            # Search the Faiss index for the top k documents for the entire batch
+            similarity_scores, top_k_indices = faiss_index.search(q_vecs, k)
 
             # For each query in the batch, calculate its AP
-            for j in range(similarity_scores.shape[0]):
+            for j in range(q_vecs.shape[0]):
                 query_idx_in_full_list = i * EVAL_BATCH_SIZE + j
                 current_query_tokens = tuple(
                     query_list[query_idx_in_full_list])
 
-                # Create the binary relevance label vector for this query
-                # Convert lists to tuples for correct 'in' comparison
+                # Get the ground truth positive documents for the current query
                 positive_docs_for_query = {
                     tuple(item) for item in query_to_positives[current_query_tokens]}
+                
+                # From the top_k_indices, create the relevance label vector
+                # The doc_list contains the original token lists
+                retrieved_docs = [tuple(doc_list[idx]) for idx in top_k_indices[j]]
+                is_relevant = np.array([1 if doc in positive_docs_for_query else 0 for doc in retrieved_docs])
 
-                # is_relevant is 1 if doc is in positives, 0 otherwise
-                is_relevant = np.array(
-                    [1 if tuple(doc) in positive_docs_for_query else 0 for doc in doc_list])
-
-                # Check if there are any relevant documents for this query in our index
+                # Check if there were any relevant documents retrieved at all
                 if np.sum(is_relevant) == 0:
-                    continue  # Skip queries with no relevant docs in the index
+                    average_precisions.append(0.0) # Score is 0 if no relevant docs are in top k
+                    continue
+
+                # The similarity scores from Faiss are distances, we need to convert them to similarity
+                # We use 1 - distance for ranking (higher is better)
+                ranking_scores = 1 - similarity_scores[j]
 
                 # label_ranking_average_precision_score expects a 2D array of [n_samples, n_labels]
-                # Here, we have one sample (the query) and n_labels (all docs)
+                # Here, we have one sample (the query) and k_labels (the retrieved docs)
                 ap_score = label_ranking_average_precision_score(
                     is_relevant.reshape(1, -1),
-                    similarity_scores[j].numpy().reshape(1, -1)
+                    ranking_scores.reshape(1, -1)
                 )
                 average_precisions.append(ap_score)
 
@@ -214,6 +230,12 @@ def main():
         type=str,
         required=True,
         help="W&B artifact for the document model (e.g., 'doc_model:v5').",
+    )
+    parser.add_argument(
+        "--k",
+        type=int,
+        default=5000,
+        help="Number of top documents to retrieve for evaluation.",
     )
     parser.add_argument(
         "--wandb_log",
