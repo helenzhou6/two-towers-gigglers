@@ -1,46 +1,52 @@
 version: '3.3'
 
 services:
-  # redis:
-  #   image: redis:latest
-  #   restart: always
-  #   ports:
-  #     - "6379:6379"
-  #   volumes:
-  #     - ./redis/data:/root/redis
-  #   environment:
-  #     - REDIS_PASSWORD=redis-password
-  #     - REDIS_PORT=6379
-  #     - REDIS_DATABASES=16
-  #   healthcheck:
-  #     test: ["CMD", "redis-cli", "-a", "redis-password", "ping"]
-  #     interval: 5s
-  #     timeout: 2s
-  #     retries: 5
+  redis:
+    image: redis:latest
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./redis/data:/root/redis
+    environment:
+      - REDIS_PASSWORD=redis-password
+      - REDIS_PORT=6379
+      - REDIS_DATABASES=16
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "redis-password", "ping"]
+      interval: 5s
+      timeout: 2s
+      retries: 5
 
-  # redis-init:
-  #   image: redis:7
-  #   depends_on:
-  #     redis:
-  #       condition: service_healthy
-  #   entrypoint: >
-  #     sh -c "
-  #       echo 'Running Redis init...';
-  #       redis-cli -a redis-password -h redis < /redis/scripts/init_commands.txt;
-  #       echo 'Init complete.';
-  #     "
-  #   volumes:
-  #     - ./redis:/redis:ro
-  #   restart: "no"
+  redis-init:
+    image: redis:7
+    depends_on:
+      redis:
+        condition: service_healthy
+    entrypoint: >
+      sh -c "
+        echo 'Running Redis init...';
+        redis-cli -a redis-password -h redis < /redis/scripts/init_commands.txt;
+        echo 'Init complete.';
+      "
+    volumes:
+      - ./redis:/redis:ro
+    restart: "no"
+  redisinsight:
+    image: redis/redisinsight:latest
+    ports:
+      - "8001:8001"
+    depends_on:
+      - redis
 
   api:
     build:
       context: .
       dockerfile: Dockerfile.api
     container_name: api
-    # depends_on:
-    #   redis:
-    #     condition: service_healthy
+    depends_on:
+      redis:
+        condition: service_healthy
     ports:
       - "8000:8000"
     env_file:
@@ -51,14 +57,14 @@ services:
       - REDIS_PORT=6379
       - REDIS_PASSWORD=redis-password
 
-  frontend:
-    build:
-      context: .
-      dockerfile: Dockerfile.frontend
-    container_name: frontend
-    depends_on:
-      - api
-    ports:
-      - "8501:8501"
-    environment:
-      - API_URL=http://api:8000
+  # frontend:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.frontend
+  #   container_name: frontend
+  #   depends_on:
+  #     - api
+  #   ports:
+  #     - "8501:8501"
+  #   environment:
+  #     - API_URL=http://api:8000
