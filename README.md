@@ -34,8 +34,6 @@ TODO:
 4. `evaluate.py` - this will evaluate a specified model on the validation dataset and will return the [mean average precision](<https://en.wikipedia.org/wiki/Evaluation_measures_(information_retrieval)#Mean_average_precision>) score. Example usage: `uv run src/evaluate.py --query_model_artifact query_model:latest --doc_model_artifact doc_model:latest`. This requires the validation set to be downloaded (`uv run src/process_bing_dataset.py --split validation`)
 5. `inference.py` - this will run the models (based on latest), and make an inference based on a query (string) being passed through (either via running the test file, or through the frontend).
 
-## Running the API & front end
-
 ### Training
 
 To train our two tower model run:
@@ -68,22 +66,16 @@ uv run src/train_two_towers.py --sweep --evaluate
 
 You should see logged in Wandb data for trainings that can give you a view into model performance and what improved the model over time.
 
-### Docker way
-
-1. Start up Docker (e.g. `colima start`).
-2. Run `docker-compose up --build` (builds it at the same time)
-
-### Non-docker way
-
+### Running the API & front end (without docker)
 1. Run API with `uvicorn src.api:app --reload` (ensure `export PYTHONPATH=./src` has been run)
    - To check it is working, go to http://127.0.0.1:8000/health-check which should return a message
    - And to test the API with a query you can pass, run `./src/tests/test_api.sh` (you can alter the query here)
 2. Whilst ensuring the API is running, in another terminal run: `streamlit run src/streamlit_app.py`, where you can access the interface at: http://localhost:8501/
 
 ## Running with docker compose
-
 1. Ensure .env is setup, with WANDB_API_KEY that is copied from wandb website
-2. Run `docker-compose up --build` to build all the docker containers etc
+2. Start up Docker (e.g. `colima start`).
+3. Run `docker-compose up --build` to build all the docker containers etc
    - If you want to cd into a specific docker container, go `docker container ls` to find the container id, then ` docker exec -it <container id> /bin/bash`
 
 ## Input dataset
