@@ -152,7 +152,17 @@ def evaluate(query_model, doc_model, k=5000):
     # --- 3.5 Build Faiss Index ---
     print(f"Building Faiss index for {doc_index.shape[0]} documents...")
     embedding_dim = doc_index.shape[1]
-    faiss_index = faiss.IndexFlatL2(embedding_dim) # Using L2 distance
+    
+    if torch.cuda.is_available():
+        print("Using GPU for Faiss index.")
+        res = faiss.StandardGpuResources() # use a single GPU
+        flat_config = faiss.GpuIndexFlatConfig()
+        flat_config.useFloat16 = True # Use float16 for faster processing
+        faiss_index = faiss.GpuIndexFlatL2(res, embedding_dim, flat_config)
+    else:
+        print("No GPU found, using CPU for Faiss index.")
+        faiss_index = faiss.IndexFlatL2(embedding_dim) # Using L2 distance
+        
     faiss.normalize_L2(doc_index) # Normalize for cosine similarity search
     faiss_index.add(doc_index)
     print("Faiss index built.")

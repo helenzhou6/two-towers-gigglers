@@ -19,5 +19,5 @@ dependencies = [
     "streamlit>=1.46.0",
     "requests>=2.32.4",
     "scikit-learn>=1.2.2",
-    "faiss-cpu>=1.7.4",
+    "faiss-gpu>=1.7.2",
 ]
