@@ -18,4 +18,5 @@ dependencies = [
     "uvicorn>=0.34.3",
     "streamlit>=1.46.0",
     "requests>=2.32.4",
+    "scikit-learn>=1.2.2",
 ]
