@@ -1,5 +1,9 @@
 # two-towers-gigglers
 
+See [presentation.pdf](./presentation.pdf) for architecture etc 
+
+![egg](https://s4.ezgif.com/tmp/ezgif-4fb7f04bafebf5.gif)
+
 TODO:
 
 - Add loss logging to wandb
