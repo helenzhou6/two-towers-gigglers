@@ -16,7 +16,8 @@ init_wandb()
 
 REDIS_HOST = os.getenv("REDIS_HOST", "redis")
 REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
-r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT)
+REDIS_PASSWORD = os.getenv("REDIS_PASSWORD", "redis-password")
+r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, password=REDIS_PASSWORD, decode_responses=False)
 
 # --- Set up vocab and all_docs artifacts needed later ---
 vocab_path = load_model_path('vocab:latest')
