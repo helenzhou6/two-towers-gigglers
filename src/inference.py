@@ -9,10 +9,14 @@ from fasttext.FastText import tokenize
 import pandas as pd
 
 device = get_device()
-QUERY_MODEL_VERSION = "latest"
-DOC_MODEL_VERSION = "latest"
+QUERY_MODEL_VERSION = "v60"
+DOC_MODEL_VERSION = "v60"
 
 init_wandb()
+
+REDIS_HOST = os.getenv("REDIS_HOST", "redis")
+REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
+r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT)
 
 # --- Set up vocab and all_docs artifacts needed later ---
 vocab_path = load_model_path('vocab:latest')
@@ -52,36 +56,7 @@ def _init_models():
 
 doc_model, query_model = _init_models()
 
-# --- Util functions needed to get top docs ---
-def _prepare_embeddingbag_inputs(tokens_indices):
-    input_tensor = torch.tensor(tokens_indices, dtype=torch.long).to(device)
-    offsets = torch.tensor([0], dtype=torch.long).to(device)
-    return (input_tensor, offsets)
-
-def _query_to_embedding(query):
-    query_tokens = tokenize(query)
-    query_indices = [word2index[t] for t in query_tokens if t in word2index]
-    unknown_index = word2index.get("<UNK>")
-    if not query_indices:
-        query_indices = [unknown_index]
-
-    query_input = _prepare_embeddingbag_inputs(query_indices)
-    with torch.no_grad():
-        query_embedding = query_model(query_input)
-    return query_embedding.squeeze(0)
-
-def _get_doc_stack():
-    doc_embeddings = []
-    for tokens in all_docs["tokenized"]:
-        with torch.no_grad():
-            doc_tensor = doc_model(_prepare_embeddingbag_inputs(tokens))
-            doc_embeddings.append(doc_tensor.squeeze(0))  # Ensure shape [300]
-    return torch.stack(doc_embeddings)  # Now shape [num_docs, 300]
-
 def search_query(query: str, num_doc=5):
-    REDIS_HOST = os.getenv("REDIS_HOST", "redis")
-    REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
-    r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT)
     query_tokens = tokenize(query)
     query_indices = [word2index.get(t, word2index.get("<UNK>")) for t in query_tokens]
     input_tensor = torch.tensor(query_indices, dtype=torch.long).to(device)
@@ -109,28 +84,15 @@ def search_query(query: str, num_doc=5):
     results = []
     for i in range(1, len(res), 2):  # skip total count
         doc = res[i + 1][3]  # get the 'text' field
-        score = float(res[i + 1][1]) # __embedding_score from above query
+        score = 1 - float(res[i + 1][1]) # __embedding_score from above query, to get cosine need to do "1- __embedding_score" since it returns distances
         results.append({
-            "rank": len(results) + 1,
             "doc": doc.decode("utf-8") if isinstance(doc, bytes) else doc,
             "score": round(score, 4)
         })
 
-    return results
+    sorted_results = [
+        {**item, "rank": idx + 1}
+        for idx, item in enumerate(sorted(results, key=lambda x: x["score"], reverse=True))
+    ]
 
-# # --- The function to run! See test folder to test run this ---
-# def search_query(query: str, num_doc=5):
-#     query_embedding = _query_to_embedding(query)
-#     print("Starting to search for top docs...")
-#     doc_stack = _get_doc_stack()
-#     res = torch.nn.functional.cosine_similarity(doc_stack, query_embedding, dim=1)
-#     top_scr, top_idx = torch.topk(res, k=num_doc)
-
-#     return [
-#         {
-#             "rank": rank + 1,
-#             "doc": all_docs["sentences"][i.item()],
-#             "score": round(s.item(), 4)
-#         }
-#         for rank, (s, i) in enumerate(zip(top_scr, top_idx))
-#     ]
+    return sorted_results

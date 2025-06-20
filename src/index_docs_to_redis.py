@@ -29,22 +29,27 @@ with open(vocab_path) as f:
 
 docs_path = load_artifact_path('docs', file_extension='parquet')
 sentences_df = pd.read_parquet(docs_path)
-docs_processed_path = load_artifact_path('docs_processed', file_extension='parquet')
-docs_df = pd.read_parquet(docs_processed_path)
+docs_indices_path = load_artifact_path('docs_processed', file_extension='parquet')
+docs_indices_df = pd.read_parquet(docs_indices_path)
 
-def encode_tokens(tokens):
-    indices = [word2index.get(t, word2index.get("<UNK>")) for t in tokens]
+# TODO: To remove the commented out code - running so can run on Helen's laptop XD
+# sentences_df = pd.read_parquet('data/docs.parquet').head(10)
+# docs_indices_df = pd.read_parquet('data/docs_processed.parquet').head(10)
+
+print("Artifact load finished, putting vectors in redis vector database...")
+
+def encode_tokens(indices):
     input_tensor = torch.tensor(indices, dtype=torch.long).to(device)
     offsets = torch.tensor([0], dtype=torch.long).to(device)
     with torch.no_grad():
         embedding = doc_model((input_tensor, offsets))
     return embedding.squeeze(0).cpu().numpy()
 
-for i, row in docs_df.iterrows():
+for i, row in docs_indices_df.iterrows():
     key = f"doc:{i}"
     sentence = sentences_df["doc"][i]
-    tokens = row["doc"]  # tokenized version
-    embedding = encode_tokens(tokens)
+    indices = row["doc"]  # tokenized version
+    embedding = encode_tokens(indices)
     r.hset(key, mapping={
         "text": sentence,
         "embedding": embedding.tobytes()
