@@ -9,10 +9,9 @@ import json
 REDIS_HOST = os.getenv("REDIS_HOST", "redis")
 REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
 DOC_MODEL_VERSION = "v60"
-REDIS_PASSWORD = os.getenv("REDIS_PASSWORD", "redis-password")
 
 init_wandb()
-r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, password=REDIS_PASSWORD, decode_responses=False)
+r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT)
 
 device = get_device()
 
