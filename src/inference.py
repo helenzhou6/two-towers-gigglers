@@ -9,8 +9,8 @@ from fasttext.FastText import tokenize
 import pandas as pd
 
 device = get_device()
-QUERY_MODEL_VERSION = "v67"
-DOC_MODEL_VERSION = "v67"
+QUERY_MODEL_VERSION = "v68"
+DOC_MODEL_VERSION = "v68"
 
 init_wandb()
 
