@@ -125,8 +125,6 @@ def train():
             # compute scalar loss
             loss = criterion(q_vec, pos_vec, neg_vec)
 
-            loss = criterion(q_vec, pos_vec, neg_vec).to(device)
-
             # backward + step
             loss.backward()
             optimizer.step()
