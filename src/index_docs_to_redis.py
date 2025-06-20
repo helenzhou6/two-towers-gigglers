@@ -8,7 +8,7 @@ import json
 
 REDIS_HOST = os.getenv("REDIS_HOST", "redis")
 REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
-DOC_MODEL_VERSION = "v60"
+DOC_MODEL_VERSION = "v67"
 
 init_wandb()
 r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT)
