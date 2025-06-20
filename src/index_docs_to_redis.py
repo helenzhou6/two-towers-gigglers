@@ -8,6 +8,7 @@ import json
 
 REDIS_HOST = os.getenv("REDIS_HOST", "redis")
 REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
+DOC_MODEL_VERSION = "v60"
 REDIS_PASSWORD = os.getenv("REDIS_PASSWORD", "redis-password")
 
 init_wandb()
@@ -20,7 +21,7 @@ ft_path = load_model_path('fasttext_tensor:latest')
 ft_state_dict = torch.load(ft_path, map_location=device)
 embedding_bag = torch.nn.EmbeddingBag.from_pretrained(ft_state_dict['weight'], mode="mean")
 doc_model = DocTower(embedding_bag).to(device)
-doc_model.load_state_dict(torch.load(load_model_path("doc_model:latest"), map_location=device))
+doc_model.load_state_dict(torch.load(load_model_path(f"doc_model:{DOC_MODEL_VERSION}"), map_location=device))
 doc_model.eval()
 
 # Load vocab and data
