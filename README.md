@@ -25,7 +25,10 @@ TODO:
 ### Scripts to run
 
 1. `process_bing_dataset.py` will process the MS/Marcho dataset to create two datasets:
-
+- Input dataset info:
+   - Hugging face datasets: outputs validation, train and test datasets
+   - Has 82326 rows - for query_id
+   - Column names: 'answers', 'passages', 'query', 'query_id', 'query_type', 'wellFormedAnswers'
 - docs dataset that has all the unique docs per pandas row saved to data/docs_processed.parquet (that is the tokenized docs) and also data/docs.parquet (which is untokenized i.e. words) & uploaded to wandb
 - data dataset that includes query (string), doc (string), and whether it was clicked (0/1), for all queries (we are going to assume these are all positive docs). Saved data/query.parquet & uploaded to wandb
 
@@ -78,11 +81,13 @@ You should see logged in Wandb data for trainings that can give you a view into 
 3. Run `docker-compose up --build` to build all the docker containers etc
    - If you want to cd into a specific docker container, go `docker container ls` to find the container id, then ` docker exec -it <container id> /bin/bash`
 
-## Input dataset
-
-- Hugging face datasets: outputs validation, train and test datasets
-- Has 82326 rows - for query_id
-- Column names: 'answers', 'passages', 'query', 'query_id', 'query_type', 'wellFormedAnswers'
+## Running redis database etc on little laptops (aka Helen's laptop)
+1. Change the Dockerfile.api - comment out api and frontend (not needed)
+2. Do `docker-compose up --build` to spin up all the redis database stuff & keep that running in the terminal
+3. In another terminal - ensure `export REDIS_HOST=localhost` & `export PYTHONPATH=./src` and run `python3 src/index_docs_to_redis.py` and then `uvicorn src.api:app`
+   - If memory (error code 137) runs out, then consider altering `python3 src/index_docs_to_redis.py` to only do `.head()` on the doc and doc_processed dataframes
+   - If you don't need to test the frontend, then run the test_inference.py file
+4. In another terminal - ensure `export API_URL=http://localhost:8000` & `export PYTHONPATH=./src` and run `streamlit run src/streamlit_app.py`
 
 ## Brainstorming
 
